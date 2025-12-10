@@ -1,80 +1,100 @@
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
+import config
 
-log = get_logger(__file__)
-tab = Chromium().latest_tab
+log = get_logger()
+tab = None
+
 
 # 账号维度数据
 def spider_xhs_accounts():
     # 首页
     log.info("开始采集账号维度数据...")
     tab.get(url='https://creator.xiaohongshu.com/new/home')
-    tab.wait(10)
+    tab.wait(6)
 
-    # 粉丝获赞数据
-    numericals = tab.eles('.numerical')
-    values = [num.text for num in numericals]
+    fans_num = 0
+    likes_num = 0
 
-    fans_num = values[1]  # 粉丝
-    likes_num = values[2] # 获赞
+    # 小红书主页偶尔会返回空html，增加重试机制次
+    try_count = 0
+    while True:
+        fans_element = tab.ele('text=粉丝数', timeout=2)
+        if try_count > 5:
+            log.error("小红书主页访问错误！！！")
+            break
+        if fans_element:
+            if fans_element:
+                # 获取前一个兄弟元素（数值元素）
+                fans_num = fans_element.prev().text
 
-    # 浏览数据
-    # 近七天
-    numbers = [elem.text for elem in tab.eles('.number')]
-    play_count = numbers[0] # 观看
-    play_time = numbers[1] # 观看总时长
-    homepage_views = numbers[2]  # 主页访客
-    likes = numbers[3]  # 点赞
-    favorites = numbers[4] # 收藏
-    comments = numbers[5]  # 评论
-    bullet = numbers[6] # 弹幕
-    followers = numbers[7]  # 笔记涨粉
-    shares = numbers[8]  # 分享
+            # 找到"获赞与收藏"前面的数值
+            likes_element = tab.ele('text=获赞与收藏', timeout=2)
+            if likes_element:
+                likes_num = likes_element.prev().text
 
-    filter=tab.ele(".filter")
-    filter.ele(".btn").click()
-    tab.wait(3)
+            tab.wait(3)
 
-    # 近三十天
-    numbers = [elem.text for elem in tab.eles('.number')]
-    last_month_play_count = numbers[0]  # 观看
-    last_month_play_time = numbers[1]  # 观看总时长
-    last_month_homepage_views = numbers[2]  # 主页访客
-    last_month_likes = numbers[3]  # 点赞
-    last_month_favorites = numbers[4]  # 收藏
-    last_month_comments = numbers[5]  # 评论
-    last_month_bullet = numbers[6]  # 弹幕
-    last_month_followers = numbers[7]  # 笔记涨粉
-    last_month_shares = numbers[8]  # 分享
+            # 浏览数据
+            # 近七天
+            numbers = [elem.text for elem in tab.eles('.number')]
+            play_count = numbers[0]  # 观看
+            play_time = numbers[1]  # 观看总时长
+            homepage_views = numbers[2]  # 主页访客
+            likes = numbers[3]  # 点赞
+            favorites = numbers[4]  # 收藏
+            comments = numbers[5]  # 评论
+            bullet = numbers[6]  # 弹幕
+            followers = numbers[7]  # 笔记涨粉
+            shares = numbers[8]  # 分享
 
+            filter = tab.ele(".filter")
+            filter.ele(".btn").click()
+            tab.wait(3)
 
-    accont_data = {
-        "粉丝": int(fans_num),
-        "获赞": int(likes_num),
-        "近7天观看": int(play_count),
-        "近7天观看总时长": int(play_time),
-        "近7天主页访客": int(homepage_views),
-        "近7天点赞": int(likes),
-        "近7天收藏": int(favorites),
-        "近7天分享": int(shares),
-        "近7天评论": int(comments),
-        "近7天弹幕": int(bullet),
-        "近7天笔记涨粉": int(followers),
+            # 近三十天
+            numbers = [elem.text for elem in tab.eles('.number')]
+            last_month_play_count = numbers[0]  # 观看
+            last_month_play_time = numbers[1]  # 观看总时长
+            last_month_homepage_views = numbers[2]  # 主页访客
+            last_month_likes = numbers[3]  # 点赞
+            last_month_favorites = numbers[4]  # 收藏
+            last_month_comments = numbers[5]  # 评论
+            last_month_bullet = numbers[6]  # 弹幕
+            last_month_followers = numbers[7]  # 笔记涨粉
+            last_month_shares = numbers[8]  # 分享
 
-        "近30天观看": int(last_month_play_count),
-        "近30天观看总时长": int(last_month_play_time),
-        "近30天主页访客": int(last_month_homepage_views),
-        "近30天点赞": int(last_month_likes),
-        "近30天收藏": int(last_month_favorites),
-        "近30天分享": int(last_month_shares),
-        "近30天评论": int(last_month_comments),
-        "近30天弹幕": int(last_month_bullet),
-        "近30天笔记涨粉": int(last_month_followers),
-    }
+            accont_data = {
+                "粉丝": int(fans_num),
+                "获赞": int(likes_num),
+                "近7天观看": int(play_count),
+                "近7天观看总时长": int(play_time),
+                "近7天主页访客": int(homepage_views),
+                "近7天点赞": int(likes),
+                "近7天收藏": int(favorites),
+                "近7天分享": int(shares),
+                "近7天评论": int(comments),
+                "近7天弹幕": int(bullet),
+                "近7天笔记涨粉": int(followers),
 
-    log.info(accont_data)
-    return accont_data
+                "近30天观看": int(last_month_play_count),
+                "近30天观看总时长": int(last_month_play_time),
+                "近30天主页访客": int(last_month_homepage_views),
+                "近30天点赞": int(last_month_likes),
+                "近30天收藏": int(last_month_favorites),
+                "近30天分享": int(last_month_shares),
+                "近30天评论": int(last_month_comments),
+                "近30天弹幕": int(last_month_bullet),
+                "近30天笔记涨粉": int(last_month_followers),
+            }
+
+            log.info(accont_data)
+            return accont_data
+        else:
+            tab.refresh()
+            log.info(f"小红书重试第{try_count + 1}次")
+            try_count += 1
 
 
 # 帖子维度数据
@@ -88,7 +108,7 @@ def spider_xhs_notes():
     notes_datas = []
     page_size = 10
     page_num = 1
-    total_pages=0
+    total_pages = 0
 
     url = "https://creator.xiaohongshu.com/api/galaxy/creator/datacenter/note/analyze/list"
     headers = {
@@ -155,7 +175,7 @@ def spider_xhs_notes():
                 notes_items = notes_res["data"]["note_infos"]
                 for note in notes_items:
                     title = note["title"]
-                    post_time=note["post_time"]
+                    post_time = note["post_time"]
                     like_count = note.get("like_count", 0)
                     read_count = note.get("read_count", 0)
                     comment_count = note.get("comment_count", 0)
@@ -166,7 +186,7 @@ def spider_xhs_notes():
                     note_data = {
                         "帖子名称": title,
                         "发布时间": post_time,
-                        "曝光":0,
+                        "曝光": 0,
                         "观看": int(read_count),
                         "点赞": int(like_count),
                         "评论": int(comment_count),
@@ -188,6 +208,7 @@ def spider_xhs_notes():
 
     return notes_datas
 
+
 # 保存数据
 def save_datas(table_id, datas):
     base_token = "YljGbJWV4a5KcVszswocsd0RnEe"  # 多维表格的基础token
@@ -197,13 +218,15 @@ def save_datas(table_id, datas):
 
 
 def spider_xiaohongshu():
+    global tab
+    tab = Chromium().latest_tab
     accounts_data = spider_xhs_accounts()
     # 保存账号数据
-    save_datas(table_id="tblHL0oMZtHgGz9w", datas=accounts_data)
+    save_datas(table_id=config.TABLE_XHS_ACCOUNTS, datas=accounts_data)
 
     notes_datas = spider_xhs_notes()
     # 保存帖子数据
-    save_datas(table_id="tbl2qKlh7dqxwkS4", datas=notes_datas)
+    save_datas(table_id=config.TABLE_XHS_NOTES, datas=notes_datas)
 
     final_data = {
         "数据平台": "小红书",
