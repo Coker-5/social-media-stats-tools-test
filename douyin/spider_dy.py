@@ -1,8 +1,9 @@
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
+import config
 
-log = get_logger(__file__)
+log = get_logger()
 tab = Chromium().latest_tab
 
 
@@ -11,10 +12,9 @@ def spider_douyin_account():
     # 首页
     log.info("开始采集账号维度数据...")
     tab.get(url='https://creator.douyin.com')
-    tab.wait(10)
+    tab.wait(6)
 
     # 粉丝数据
-    log.info("正在采集粉丝维度数据...")
     parent_ele = tab.ele('.statics-kyUhqC')
     numbers = parent_ele.eles('.number-No6ev9')
 
@@ -23,14 +23,29 @@ def spider_douyin_account():
 
 
     # 浏览数据
+    play_count = 0  # 播放量
+    homepage_views = 0  # 主页访问量
+    likes = 0  # 作品点赞
+    shares = 0  # 作品分享
+    comments = 0  # 作品评论
+    followers = 0  # 净增粉丝
+
+    yesterday_play_count = 0  # 播放量
+    yesterday_homepage_views = 0  # 主页访问量
+    yesterday_likes = 0  # 作品点赞
+    yesterday_shares = 0  # 作品分享
+    yesterday_comments = 0  # 作品评论
+    yesterday_followers = 0  # 净增粉丝
+
     # 近七天
     parent_ele = tab.eles('.number-vDKr2F')
-    play_count = parent_ele[0].text  # 播放量
-    homepage_views = parent_ele[1].text  # 主页访问量
-    likes = parent_ele[2].text  # 作品点赞
-    shares = parent_ele[3].text  # 作品分享
-    comments = parent_ele[4].text  # 作品评论
-    followers = parent_ele[5].text  # 净增粉丝
+    if parent_ele and len(parent_ele)>3:
+        play_count = parent_ele[0].text  # 播放量
+        homepage_views = parent_ele[1].text  # 主页访问量
+        likes = parent_ele[2].text  # 作品点赞
+        shares = parent_ele[3].text  # 作品分享
+        comments = parent_ele[4].text  # 作品评论
+        followers = parent_ele[5].text  # 净增粉丝
 
 
     # 昨天
@@ -41,12 +56,13 @@ def spider_douyin_account():
     tab.wait(3)
 
     parent_ele = tab.eles('.number-vDKr2F')
-    yesterday_play_count = parent_ele[0].text  # 播放量
-    yesterday_homepage_views = parent_ele[1].text  # 主页访问量
-    yesterday_likes = parent_ele[2].text  # 作品点赞
-    yesterday_shares = parent_ele[3].text  # 作品分享
-    yesterday_comments = parent_ele[4].text  # 作品评论
-    yesterday_followers = parent_ele[5].text  # 净增粉丝
+    if parent_ele and len(parent_ele)>3:
+        yesterday_play_count = parent_ele[0].text  # 播放量
+        yesterday_homepage_views = parent_ele[1].text  # 主页访问量
+        yesterday_likes = parent_ele[2].text  # 作品点赞
+        yesterday_shares = parent_ele[3].text  # 作品分享
+        yesterday_comments = parent_ele[4].text  # 作品评论
+        yesterday_followers = parent_ele[5].text  # 净增粉丝
 
 
     accont_data = {
@@ -160,65 +176,7 @@ def spider_douyin_notes():
         finally:
             tab.wait(1.5)
 
-    # for id in notes_ids:
-    #     url = "https://creator.douyin.com/web/api/creator/item/mget"
-    #     headers = {
-    #         "accept": "*/*",
-    #         "accept-language": "zh-CN,zh;q=0.9",
-    #         "agw-js-conv": "str",
-    #         "priority": "u=1, i",
-    #         "referer": "https://creator.douyin.com/creator-micro/work-management/work-detail/7532684054816329018?enter_from=content",
-    #         "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
-    #         "sec-ch-ua-mobile": "?0",
-    #         "sec-ch-ua-platform": "\"macOS\"",
-    #         "sec-fetch-dest": "empty",
-    #         "sec-fetch-mode": "cors",
-    #         "sec-fetch-site": "same-origin",
-    #         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
-    #         "x-secsdk-csrf-token": "0001000000011e10dc31421d2509a9c17e74e11ebcb7c6a138aaefae1c1fcb1fadcce8d892fc187df08a42db68f1"
-    #     }
-    #     params = {
-    #         "ids": id,
-    #         "fields": "metrics,review,play_info",
-    #         "msToken": "L155D5OPyKIeRObrYc5y84UQHoxCDxM_A3LodB-T0jvXeduXZOqMg7ejHuW-hJp1hdIHz0kqmR5cFeqVKcweewMIjnnvuCL8rR-acTaWDy1Oace7KDjfrpexGk6z2P5tWf-43lFhCqqbkPPoWV8tFOmtnBg4lHPvg080z8vJf7PI3S9KF7KGQds=",
-    #         "a_bogus": "d7sRhtWwOqQccpMGuCnKet2lKC6ANB8yieToWGfjeOwDcZ0OtZHpBNSdbooJsEEWDSBChCI7qEtlbdncszssZlnkKmkfSDhyxtAn9uXoZHksYPvh1rfECykFFXsaWmzwe556iAJl0UGL1nV-wHdm/Q/9CACKQQWhOZObk2YST9GgZu8I2pMsi/s27fjHRBngsJ6="
-    #     }
-    #     try:
-    #         tab.get(url, headers=headers, params=params)
-    #         if tab.response.ok:
-    #             note_detail = tab.response.json()
-    #             description = note_detail["items"][0]["description"] # 帖子名称
-    #             create_time=note_detail["items"][0]["create_time"] # 发布时间
-    #             view_count=note_detail["items"][0]["metrics"]["view_count"] # 播放量
-    #             like_count=note_detail["items"][0]["metrics"]["like_count"] # 点赞数
-    #             comment_rate=note_detail["items"][0]["metrics"]["comment_rate"] # 评论数
-    #             share_rate=note_detail["items"][0]["metrics"]["share_rate"] # 分享数
-    #             favorite_count=note_detail["items"][0]["metrics"]["favorite_count"] # 收藏数
-    #             completion_rate_5s=note_detail["items"][0]["metrics"]["completion_rate_5s"] # 5s完播率
-    #             bounce_rate_2s=note_detail["items"][0]["metrics"]["bounce_rate_2s"] # 2s跳出率
-    #             avg_view_second=note_detail["items"][0]["metrics"]["avg_view_second"] # 平均播放时长
-    #             completion_rate=note_detail["items"][0]["metrics"]["completion_rate"] # 完播率
-    #
-    #             note_data = {
-    #                 "帖子名称": description,
-    #                 "发布时间": datetime.datetime.fromtimestamp(int(create_time)).strftime('%Y-%m-%d %H:%M:%S'),
-    #                 "播放量": view_count,
-    #                 "点赞数": like_count,
-    #                 "评论数": comment_rate,
-    #                 "分享数": share_rate,
-    #                 "收藏数": favorite_count,
-    #                 "5秒完播率": completion_rate_5s,
-    #                 "2秒跳出率": bounce_rate_2s,
-    #                 "平均播放时长": avg_view_second,
-    #                 "完播率": completion_rate
-    #             }
-    #             log.info(note_data)
-    #             notes_datas.append(note_data)
-    #
-    #     except Exception as e:
-    #         log.error(e)
-    #     finally:
-    #         tab.wait(2)
+
     return notes_datas
 
 
@@ -230,7 +188,7 @@ def spider_douyin_notes():
 
 # 保存数据
 def save_datas(table_id, datas):
-    base_token = "YljGbJWV4a5KcVszswocsd0RnEe"  # 多维表格的基础token
+    base_token = config.BASE_TOKEN  # 多维表格的基础token
 
     writer = FeishuBitableWriter(base_token, table_id)
     writer.add_records(datas)
@@ -239,11 +197,11 @@ def save_datas(table_id, datas):
 def spider_douyin():
     accounts_data = spider_douyin_account()
     # 保存账号数据
-    save_datas(table_id="tblEQv4wSINAwiO6", datas=accounts_data)
+    save_datas(table_id=config.TABLE_DY_ACCOUNTS, datas=accounts_data)
 
     notes_datas = spider_douyin_notes()
     # 保存帖子数据
-    save_datas(table_id="tbllmZ7Ahf0RgLIQ", datas=notes_datas)
+    save_datas(table_id=config.TABLE_DY_NOTES, datas=notes_datas)
 
     final_data = {
         "数据平台": "抖音",

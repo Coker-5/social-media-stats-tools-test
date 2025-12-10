@@ -2,10 +2,11 @@ import time
 from DrissionPage import Chromium
 from tools.logstar import get_logger
 from tools.send_feishu import FeishuBot
+import config
 
-log = get_logger(__file__)
+log = get_logger()
 tab = Chromium()
-bot = FeishuBot("https://open.feishu.cn/open-apis/bot/v2/hook/a0f02537-1227-4e6b-a501-f7816723ee42")
+bot = FeishuBot(config.BOT_WEBHOOK)
 
 def login_xiaohongshu():
     global tab

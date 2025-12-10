@@ -5,7 +5,7 @@ from douyin.spider_dy import spider_douyin
 from xiaohongshu.login_xhs import login_xiaohongshu
 from xiaohongshu.spider_xhs import spider_xiaohongshu
 
-log = get_logger(__name__)
+log = get_logger()
 
 if __name__ == '__main__':
 
