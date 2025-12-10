@@ -4,7 +4,7 @@ from tools.logstar import get_logger
 import config
 
 log = get_logger()
-tab = None
+tab = Chromium().latest_tab
 
 
 # 账号维度数据
