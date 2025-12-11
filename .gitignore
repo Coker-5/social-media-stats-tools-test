@@ -2,4 +2,5 @@
 /logs/
 /test/
 /.venv/
-config.json
+/kuaishou
+config/config.json
