@@ -23,7 +23,7 @@ def login_xiaohongshu(page_xiaohongshu):
             if not login_btn and tab.url == "https://creator.xiaohongshu.com/new/home":
                 break
             bot.send_text(text="【 小红书创作者中心 】登录已失效，请重新扫码登录", at_all=True)
-            time.sleep(20)
+            time.sleep(30)
     log.info("小红书创作者中心---已成功登录")
 
 

@@ -23,7 +23,7 @@ def login_douyin(page_douyin):
             if not login_btn and tab.url == "https://creator.douyin.com/creator-micro/home":
                 break
             bot.send_text(text="【 抖音创作者中心 】登录已失效，请重新扫码登录", at_all=True)
-            time.sleep(20)
+            time.sleep(30)
     log.info("抖音创作者中心---已成功登录")
 
 
