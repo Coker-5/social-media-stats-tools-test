@@ -1,31 +1,42 @@
+# tools/config_loader.py
 import json
+import sys
+from pathlib import Path
 
-# 加载配置
+def get_project_root():
+    """获取项目根目录（兼容打包后）"""
+    if getattr(sys, 'frozen', False):
+        # 打包后的可执行文件路径
+        return Path(sys.executable).parent
+    else:
+        # 开发环境：config_loader.py 所在目录的父级（即项目根目录）
+        return Path(__file__).parent.parent
+
+# 配置文件路径：项目根目录 / config / config.json
+_CONFIG_PATH = get_project_root() / "config" / "config.json"
+
 _CONFIG = None
 
 def _load():
-    """加载配置"""
     global _CONFIG
     if _CONFIG is None:
-        with open('config.json', 'r', encoding='utf-8') as f:
+        with open(_CONFIG_PATH, 'r', encoding='utf-8') as f:
             _CONFIG = json.load(f)
     return _CONFIG
 
-# 导出配置变量
 def _get(keys):
-    """获取嵌套配置值"""
     config = _load()
     value = config
     for key in keys:
         value = value[key]
     return value
 
-# 应用信息
+# 导出配置项
+START_TIME = _get(['start_time'])
 APP_ID = _get(['feishu_config', 'app_info', 'APP_ID'])
 APP_SECRET = _get(['feishu_config', 'app_info', 'APP_SECRET'])
 BOT_WEBHOOK = _get(['feishu_config', 'bot_webhook'])
 
-# 表格信息
 BASE_TOKEN = _get(['tables', 'base_token'])
 TABLE_DY_ACCOUNTS = _get(['tables', 'douyin', 'accounts'])
 TABLE_DY_NOTES = _get(['tables', 'douyin', 'notes'])
