@@ -178,7 +178,7 @@ def spider_xhs_notes():
                     imp_count = note["imp_count"]
                     like_count = note.get("like_count", 0)
                     read_count = note.get("read_count", 0)
-                    cover_click_rate = note.get("cover_click_rate", 0)
+                    cover_click_rate = note.get("coverClickRate", 0)
                     comment_count = note.get("comment_count", 0)
                     share_count = note.get("share_count", 0)
                     fav_count = note.get("fav_count", 0)
@@ -193,7 +193,7 @@ def spider_xhs_notes():
                         "评论": int(comment_count),
                         "分享": int(share_count),
                         "收藏": int(fav_count),
-                        "封面点击率": int(cover_click_rate)*100,
+                        "封面点击率": str(int(cover_click_rate)*100),
                         "人均观看时长": int(view_time_avg),
                     }
                     log.info(note_data)
