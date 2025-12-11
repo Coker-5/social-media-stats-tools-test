@@ -2,21 +2,21 @@ import time
 from DrissionPage import Chromium
 from tools.logstar import get_logger
 from tools.send_feishu import FeishuBot
-import config
+from tools.config_loader import (BOT_WEBHOOK)
 
 log = get_logger()
-tab = Chromium().latest_tab
-bot = FeishuBot(config.BOT_WEBHOOK)
+bot = FeishuBot(BOT_WEBHOOK)
 
-def login_douyin():
 
+def login_douyin(page_douyin):
+    tab = page_douyin
     tab.get('https://creator.douyin.com/')
     tab.wait(2)
 
-    login_btn = tab.ele(".flat_container-FFKCgg",timeout=2)
+    login_btn = tab.ele(".flat_container-FFKCgg", timeout=2)
     if login_btn:
         log.warning("抖音创作者中心---登录已失效，请重新扫码登录")
-        bot.send_text(text="【 抖音创作者中心 】登录已失效，请重新扫码登录",at_all=True)
+        bot.send_text(text="【 抖音创作者中心 】登录已失效，请重新扫码登录", at_all=True)
         while True:
             log.info("登录状态检查中...")
             login_btn = tab.ele(".flat_container-FFKCgg")
@@ -27,6 +27,6 @@ def login_douyin():
     log.info("抖音创作者中心---已成功登录")
 
 
-
 if __name__ == '__main__':
-    login_douyin()
+    tab = Chromium().latest_tab
+    login_douyin(tab)

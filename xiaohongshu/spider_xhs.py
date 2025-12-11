@@ -1,10 +1,10 @@
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
-import config
+from tools.config_loader import (BASE_TOKEN,TABLE_XHS_NOTES,TABLE_XHS_ACCOUNTS)
 
 log = get_logger()
-tab = Chromium().latest_tab
+tab = None
 
 
 # 账号维度数据
@@ -96,7 +96,6 @@ def spider_xhs_accounts():
             log.info(f"小红书重试第{try_count + 1}次")
             try_count += 1
 
-
 # 帖子维度数据
 def spider_xhs_notes():
     # 数据看板-内容分析-笔记数据
@@ -176,24 +175,26 @@ def spider_xhs_notes():
                 for note in notes_items:
                     title = note["title"]
                     post_time = note["post_time"]
+                    imp_count = note["imp_count"]
                     like_count = note.get("like_count", 0)
                     read_count = note.get("read_count", 0)
+                    cover_click_rate = note.get("cover_click_rate", 0)
                     comment_count = note.get("comment_count", 0)
                     share_count = note.get("share_count", 0)
                     fav_count = note.get("fav_count", 0)
+                    view_time_avg = note.get("view_time_avg", 0)
 
-                    # 封面点击率，人均观看时长，曝光待补充，帖子链接不确定是否需要暂不添加
                     note_data = {
                         "帖子名称": title,
                         "发布时间": post_time,
-                        "曝光": 0,
+                        "曝光": int(imp_count),
                         "观看": int(read_count),
                         "点赞": int(like_count),
                         "评论": int(comment_count),
                         "分享": int(share_count),
                         "收藏": int(fav_count),
-                        "封面点击率": '0',
-                        "人均观看时长": 0,
+                        "封面点击率": int(cover_click_rate)*100,
+                        "人均观看时长": int(view_time_avg),
                     }
                     log.info(note_data)
                     notes_datas.append(note_data)
@@ -211,22 +212,22 @@ def spider_xhs_notes():
 
 # 保存数据
 def save_datas(table_id, datas):
-    base_token = "YljGbJWV4a5KcVszswocsd0RnEe"  # 多维表格的基础token
+    base_token = BASE_TOKEN  # 多维表格的基础token
 
     writer = FeishuBitableWriter(base_token, table_id)
     writer.add_records(datas)
 
 
-def spider_xiaohongshu():
+def spider_xiaohongshu(page_xiaohongshu):
     global tab
-    tab = Chromium().latest_tab
+    tab = page_xiaohongshu
     accounts_data = spider_xhs_accounts()
     # 保存账号数据
-    save_datas(table_id=config.TABLE_XHS_ACCOUNTS, datas=accounts_data)
+    save_datas(table_id=TABLE_XHS_ACCOUNTS, datas=accounts_data)
 
     notes_datas = spider_xhs_notes()
     # 保存帖子数据
-    save_datas(table_id=config.TABLE_XHS_NOTES, datas=notes_datas)
+    save_datas(table_id=TABLE_XHS_NOTES, datas=notes_datas)
 
     final_data = {
         "数据平台": "小红书",
@@ -238,4 +239,5 @@ def spider_xiaohongshu():
 
 
 if __name__ == '__main__':
-    spider_xiaohongshu()
+    tab = Chromium().latest_tab
+    spider_xiaohongshu(tab)

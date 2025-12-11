@@ -1,11 +1,10 @@
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
-import config
+from tools.config_loader import (BASE_TOKEN,TABLE_DY_NOTES,TABLE_DY_ACCOUNTS)
 
 log = get_logger()
-tab = Chromium().latest_tab
-
+tab = None
 
 # 账号维度数据
 def spider_douyin_account():
@@ -179,7 +178,6 @@ def spider_douyin_notes():
 
     return notes_datas
 
-
 # 私信数据
 
 
@@ -188,20 +186,23 @@ def spider_douyin_notes():
 
 # 保存数据
 def save_datas(table_id, datas):
-    base_token = config.BASE_TOKEN  # 多维表格的基础token
+    base_token = BASE_TOKEN  # 多维表格的基础token
 
     writer = FeishuBitableWriter(base_token, table_id)
     writer.add_records(datas)
 
 
-def spider_douyin():
+def spider_douyin(page_douyin):
+    global tab
+    tab = page_douyin
+
     accounts_data = spider_douyin_account()
     # 保存账号数据
-    save_datas(table_id=config.TABLE_DY_ACCOUNTS, datas=accounts_data)
+    save_datas(table_id=TABLE_DY_ACCOUNTS, datas=accounts_data)
 
     notes_datas = spider_douyin_notes()
     # 保存帖子数据
-    save_datas(table_id=config.TABLE_DY_NOTES, datas=notes_datas)
+    save_datas(table_id=TABLE_DY_NOTES, datas=notes_datas)
 
     final_data = {
         "数据平台": "抖音",
@@ -213,4 +214,5 @@ def spider_douyin():
 
 
 if __name__ == '__main__':
-    spider_douyin()
+    tab = Chromium().latest_tab
+    spider_douyin(tab)

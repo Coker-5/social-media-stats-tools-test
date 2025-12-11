@@ -4,15 +4,15 @@ import requests
 import json
 from typing import Dict, List, Any
 from tools.logstar import get_logger
-import config
+from tools.config_loader import (APP_ID, APP_SECRET)
 
 log = get_logger()
 
 
 class FeishuBitableWriter:
     def __init__(self, base_token: str, table_id: str):
-        self.app_id = config.APP_ID
-        self.app_secret = config.APP_SECRET
+        self.app_id = APP_ID
+        self.app_secret = APP_SECRET
         self.base_token = base_token
         self.table_id = table_id
         self.tenant_access_token = None
