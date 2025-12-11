@@ -1,0 +1,21 @@
+{
+  "start_time":"12:00:00",
+  "feishu_config": {
+    "app_info": {
+      "APP_ID": "",
+      "APP_SECRET": ""
+    },
+    "bot_webhook": ""
+  },
+  "tables": {
+    "base_token": "",
+    "douyin": {
+      "accounts": "",
+      "notes": ""
+    },
+    "xiaohongshu": {
+      "accounts": "",
+      "notes": ""
+    }
+  }
+}

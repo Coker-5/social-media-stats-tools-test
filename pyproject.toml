@@ -1,0 +1,11 @@
+[project]
+name = "social-media-stats-tools"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "apscheduler>=3.11.1",
+    "drissionpage~=4.1.1.2",
+    "loguru~=0.7.3",
+    "requests~=2.32.5",
+]
