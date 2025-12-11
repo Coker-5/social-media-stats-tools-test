@@ -6,7 +6,14 @@ from xiaohongshu.login_xhs import login_xiaohongshu
 from xiaohongshu.spider_xhs import spider_xiaohongshu
 from apscheduler.schedulers.blocking import BlockingScheduler
 from DrissionPage import Chromium
+from tools.config_loader import (START_TIME)
+import os
+import sys
+
 log = get_logger()
+
+if getattr(sys, 'frozen', False):  # 如果是打包后的环境
+    os.chdir(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable))
 
 
 def main():
@@ -37,6 +44,7 @@ def main():
 
 
 if __name__ == '__main__':
+    hours, minutes, seconds = START_TIME.split(':')
     scheduler = BlockingScheduler()
-    scheduler.add_job(func=main, trigger='cron', hour=13, minute=37, second=0, timezone='Asia/Shanghai')
+    scheduler.add_job(func=main, trigger='cron', hour=int(hours), minute=int(minutes), second=int(seconds), timezone='Asia/Shanghai')
     scheduler.start()
