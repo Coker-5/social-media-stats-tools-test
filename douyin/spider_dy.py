@@ -1,10 +1,12 @@
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
-from tools.config_loader import (BASE_TOKEN,TABLE_DY_NOTES,TABLE_DY_ACCOUNTS)
+from tools.config_loader import (BASE_TOKEN, TABLE_DY_NOTES, TABLE_DY_ACCOUNTS)
+from parse_dy import parse_douyin_notes  # 导入解析函数
 
 log = get_logger()
 tab = None
+
 
 # 账号维度数据
 def spider_douyin_account():
@@ -19,7 +21,6 @@ def spider_douyin_account():
 
     fans_num = numbers[1].text  # 粉丝
     likes_num = numbers[2].text  # 获赞
-
 
     # 浏览数据
     play_count = 0  # 播放量
@@ -38,14 +39,13 @@ def spider_douyin_account():
 
     # 近七天
     parent_ele = tab.eles('.number-vDKr2F')
-    if parent_ele and len(parent_ele)>3:
+    if parent_ele and len(parent_ele) > 3:
         play_count = parent_ele[0].text  # 播放量
         homepage_views = parent_ele[1].text  # 主页访问量
         likes = parent_ele[2].text  # 作品点赞
         shares = parent_ele[3].text  # 作品分享
         comments = parent_ele[4].text  # 作品评论
         followers = parent_ele[5].text  # 净增粉丝
-
 
     # 昨天
     tab.ele("@role=combobox").click()
@@ -55,14 +55,13 @@ def spider_douyin_account():
     tab.wait(3)
 
     parent_ele = tab.eles('.number-vDKr2F')
-    if parent_ele and len(parent_ele)>3:
+    if parent_ele and len(parent_ele) > 3:
         yesterday_play_count = parent_ele[0].text  # 播放量
         yesterday_homepage_views = parent_ele[1].text  # 主页访问量
         yesterday_likes = parent_ele[2].text  # 作品点赞
         yesterday_shares = parent_ele[3].text  # 作品分享
         yesterday_comments = parent_ele[4].text  # 作品评论
         yesterday_followers = parent_ele[5].text  # 净增粉丝
-
 
     accont_data = {
         "粉丝": int(fans_num),
@@ -112,7 +111,6 @@ def spider_douyin_notes():
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
-            "x-secsdk-csrf-token": "00010000000138d4126a71745e49fddf2c9dd13eadb9e85cb78887b2274d3bc004450ebca88b187de7688ed0301f"
         }
         url = "https://creator.douyin.com/janus/douyin/creator/pc/work_list"
         params = {
@@ -127,60 +125,21 @@ def spider_douyin_notes():
             tab.get(url, headers=headers, params=params)
             if tab.response.ok:
                 notes_res = tab.response.json()
-                max_cursor = notes_res["max_cursor"]
-                has_more = notes_res['has_more']
+                max_cursor = notes_res.get("max_cursor", 0)
+                has_more = notes_res.get('has_more', False)
 
-                for index, note in enumerate(notes_res["items"]):
-
-                    awesome_li = notes_res["aweme_list"][index]
-                    is_private = awesome_li["status"]["is_private"]
-
-                    if not is_private:
-                        link = awesome_li["share_url"]  # 链接
-                        description = note["description"]  # 帖子名称
-                        create_time = note["create_time"] * 1000  # 发布时间
-                        metrics = note["metrics"]
-                        view_count = int(metrics["view_count"])  # 播放量
-                        like_count = int(metrics["like_count"])  # 点赞数
-                        comment_rate = int(metrics["comment_count"])  # 评论数
-                        share_rate = int(float(metrics["share_rate"]))  # 分享数
-                        favorite_count = int(metrics.get("favorite_count", 0))  # 收藏数
-                        completion_rate_5s = str(round(float(metrics.get("completion_rate_5s", 0)) * 100, 2))  # 5s完播率
-                        bounce_rate_2s = str(round(float(metrics.get("bounce_rate_2s", 0)) * 100, 1))  # 2s跳出率
-                        avg_view_second = int(float(metrics.get("avg_view_second", 0)))  # 平均播放时长
-                        completion_rate = str(round(float(metrics.get("completion_rate", 0)) * 100, 1))  # 完播率
-
-                        note_data = {
-                            "帖子名称": description,
-                            "发布时间": create_time,
-                            "播放量": view_count,
-                            "点赞数": like_count,
-                            "评论数": comment_rate,
-                            "分享数": share_rate,
-                            "收藏数": favorite_count,
-                            "5秒完播率": completion_rate_5s,
-                            "2秒跳出率": bounce_rate_2s,
-                            "平均播放时长": avg_view_second,
-                            "完播率": completion_rate,
-                            "帖子链接": {
-                                "text": description,
-                                "link": link
-                            },
-                        }
-                        log.info(note_data)
-                        notes_datas.append(note_data)
+                page_notes = parse_douyin_notes(notes_res)
+                notes_datas.extend(page_notes)
 
         except Exception as e:
-            log.error(e)
+            log.error(f"获取笔记数据时出错: {e}")
         finally:
             tab.wait(1.5)
 
-
     return notes_datas
 
+
 # 私信数据
-
-
 # 评论数据
 
 
