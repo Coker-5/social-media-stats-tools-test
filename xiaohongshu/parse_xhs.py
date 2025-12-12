@@ -4,7 +4,7 @@ from tools.logstar import get_logger
 log = get_logger()
 
 
-def read_notes_from_excel(file_path):
+def parse_xhs_notes(file_path):
     """从Excel文件读取笔记数据"""
     # 读取Excel文件
     df = pd.read_excel(file_path, skiprows=1, engine='openpyxl')

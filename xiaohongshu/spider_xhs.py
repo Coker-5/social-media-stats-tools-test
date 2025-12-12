@@ -5,7 +5,7 @@ from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
 from tools.config_loader import (BASE_TOKEN, TABLE_XHS_NOTES, TABLE_XHS_ACCOUNTS)
 from tools.data_clean import cleaning
-from xiaohongshu.parse_xhs import read_notes_from_excel
+from xiaohongshu.parse_xhs import parse_xhs_notes
 import  warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
@@ -122,7 +122,7 @@ def spider_xhs_notes():
     mission.wait(show=False)
 
     if mission:
-        notes_datas = read_notes_from_excel(file_path="./statics/" + file_name)
+        notes_datas = parse_xhs_notes(file_path="./statics/" + file_name)
 
     return notes_datas
 
