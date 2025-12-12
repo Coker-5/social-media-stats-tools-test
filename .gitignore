@@ -4,3 +4,4 @@
 /.venv/
 /kuaishou
 config/config.json
+/xiaohongshu/statics
