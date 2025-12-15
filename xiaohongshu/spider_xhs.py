@@ -3,14 +3,16 @@ from datetime import datetime
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
-from tools.config_loader import (BASE_TOKEN, TABLE_XHS_NOTES, TABLE_XHS_ACCOUNTS)
+from tools.config_loader import (BASE_TOKEN, TABLE_XHS_NOTES, TABLE_XHS_ACCOUNTS, BOT_WEBHOOK, USER_IDS)
 from tools.data_clean import cleaning
+from tools.send_feishu import FeishuBot
 from xiaohongshu.parse_xhs import parse_xhs_notes
 import  warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 log = get_logger()
 tab = None
+bot = FeishuBot(BOT_WEBHOOK)
 
 
 # 账号维度数据
@@ -136,22 +138,37 @@ def save_datas(table_id, datas):
 
 
 def spider_xiaohongshu(page_xiaohongshu):
-    global tab
-    tab = page_xiaohongshu
-    accounts_data = spider_xhs_accounts()
-    # 保存账号数据
-    save_datas(table_id=TABLE_XHS_ACCOUNTS, datas=accounts_data)
+    try:
+        global tab
+        tab = page_xiaohongshu
+        accounts_data = spider_xhs_accounts()
+        # 保存账号数据
+        save_datas(table_id=TABLE_XHS_ACCOUNTS, datas=accounts_data)
 
-    notes_datas = spider_xhs_notes()
-    # 保存帖子数据
-    save_datas(table_id=TABLE_XHS_NOTES, datas=notes_datas)
+        notes_datas = spider_xhs_notes()
+        # 保存帖子数据
+        save_datas(table_id=TABLE_XHS_NOTES, datas=notes_datas)
 
-    final_data = {
-        "数据平台": "小红书",
-        "账号维度数据": accounts_data,
-        "帖子维度数据": notes_datas,
-    }
-    log.info(final_data)
+        final_data = {
+            "数据平台": "小红书",
+            "账号维度数据": accounts_data,
+            "帖子维度数据": notes_datas,
+        }
+        log.info(final_data)
+    except Exception as e:
+        log.error(e)
+        bot.send_card_alert(
+            title="爬虫",
+            task_name="爬虫计划任务运行「异常」时告警-新媒体数据-刘建强",
+            run_script_name=f"{__file__}",
+            exception_plan="小红书-新媒体数据-刘建强",
+            exception_app="小红书",
+            error_message=f"任务失败，因为{e}",
+            client_ip="10.30.40.150",
+            at_all=False,
+            at_user_ids=[USER_IDS["刘建强"]]  # 替换为实际的用户ID
+        )
+        raise
     return final_data
 
 

@@ -1,7 +1,10 @@
 # parse_dy.py
+from tools.config_loader import BOT_WEBHOOK, USER_IDS
 from tools.logstar import get_logger
+from tools.send_feishu import FeishuBot
 
 log = get_logger()
+bot = FeishuBot(BOT_WEBHOOK)
 
 
 def parse_douyin_notes(notes_res):
@@ -63,7 +66,18 @@ def parse_douyin_notes(notes_res):
                 log.info(note_data)
 
     except Exception as e:
-        log.error(f"解析笔记数据时出错: {e}")
+        log.error(e)
+        bot.send_card_alert(
+            title="爬虫",
+            task_name="爬虫计划任务运行「异常」时告警-新媒体数据-刘建强",
+            run_script_name=f"{__file__}",
+            exception_plan="爬虫-新媒体数据-刘建强",
+            exception_app="抖音",
+            error_message=f"任务失败，因为{e}",
+            client_ip="10.30.40.150",
+            at_all=False,
+            at_user_ids=[USER_IDS["刘建强"]]  # 替换为实际的用户ID
+        )
         raise
 
     return notes_datas
