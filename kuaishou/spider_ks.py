@@ -134,14 +134,10 @@ def spider_ks_notes():
         "sec-ch-ua-platform": "\"macOS\""
     }
 
-    # 基础参数
-    base_params = {
-        "__NS_sig3": "afbff8c80232bd9576f2f1f0fb39cea22ace668aeeeeecece3e2e1fb"
-    }
 
     url = "https://cp.kuaishou.com/rest/cp/creator/analysis/pc/photo/list"
 
-    while has_more and page_num < 50:  # 最多采集20页，防止无限循环
+    while has_more and page_num < 50:
         try:
             # 构建请求数据
             data = {
@@ -159,8 +155,6 @@ def spider_ks_notes():
             response = tab.post(
                 url,
                 headers=headers,
-                cookies=cookies,
-                params=base_params,
                 data=data_json
             )
 
