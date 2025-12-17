@@ -7,7 +7,7 @@ from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
 from tools.send_feishu import FeishuBot
 from DrissionPage import Chromium
-from parse_ks import parse_ks_photo_list_data, parse_ks_photo_detail_data, format_note_data
+from kuaishou.parse_ks import parse_ks_photo_list_data, parse_ks_photo_detail_data, format_note_data
 
 bot = FeishuBot(BOT_WEBHOOK)
 log = get_logger()
