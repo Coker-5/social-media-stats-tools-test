@@ -1,4 +1,6 @@
 import time
+from kuaishou.login_ks import login_kuaishou
+from kuaishou.spider_ks import spider_kuaishou
 from tools.logstar import get_logger
 from douyin.login_dy import login_douyin
 from douyin.spider_dy import spider_douyin
@@ -20,16 +22,17 @@ if getattr(sys, 'frozen', False):  # 如果是打包后的环境
 
 def main():
     try:
+
         # 创建浏览器实例
         browser = Chromium()
-        page_douyin = browser.latest_tab
         browser.wait(2)
         log.info(f"----------------------任务开始执行----------------------")
 
+
         log.info("----------------------开始采集抖音数据----------------------")
+        page_douyin = browser.latest_tab
         login_douyin(page_douyin)
         spider_douyin(page_douyin)
-
         time.sleep(3)
 
         log.info("----------------------开始采集小红书数据----------------------")
@@ -37,10 +40,20 @@ def main():
         page_xiaohongshu.wait(2)
         login_xiaohongshu(page_xiaohongshu)
         spider_xiaohongshu(page_xiaohongshu)
+        time.sleep(3)
+
+        log.info("----------------------开始采集快手数据----------------------")
+        page_kuaishou = browser.new_tab()
+        page_kuaishou.wait(2)
+        login_kuaishou(page_kuaishou)
+        spider_kuaishou(page_kuaishou)
+
 
         # 完成后关闭浏览器
         browser.quit()
         log.info(f"----------------------任务执行完成----------------------")
+
+
     except Exception as e:
         log.error(e)
         bot.send_card_alert(
