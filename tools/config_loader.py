@@ -42,15 +42,19 @@ def _parse_user_ids(user_ids_list):
 
 
 # 导出配置项
+# 基础配置
 START_TIME = _get(['start_time'])
 APP_ID = _get(['feishu_config', 'app_info', 'APP_ID'])
 APP_SECRET = _get(['feishu_config', 'app_info', 'APP_SECRET'])
 BOT_WEBHOOK = _get(['feishu_config', 'bot_webhook'])
 
+# 表格配置
 BASE_TOKEN = _get(['tables', 'base_token'])
 TABLE_DY_ACCOUNTS = _get(['tables', 'douyin', 'accounts'])
 TABLE_DY_NOTES = _get(['tables', 'douyin', 'notes'])
 TABLE_XHS_ACCOUNTS = _get(['tables', 'xiaohongshu', 'accounts'])
 TABLE_XHS_NOTES = _get(['tables', 'xiaohongshu', 'notes'])
+TABLE_KS_ACCOUNTS = _get(['tables', 'kuaishou', 'accounts'])
+TABLE_KS_NOTES = _get(['tables', 'kuaishou', 'notes'])
 
 USER_IDS = _parse_user_ids(_get(['user_ids']))
