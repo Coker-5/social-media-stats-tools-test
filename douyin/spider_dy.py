@@ -135,6 +135,7 @@ def spider_douyin_notes():
 
         except Exception as e:
             log.error(f"获取笔记数据时出错: {e}")
+            raise
         finally:
             tab.wait(1.5)
 

@@ -36,6 +36,7 @@ class FeishuBitableWriter:
             )
         except Exception as alert_e:
             log.error(f"发送告警失败: {alert_e}")
+            raise
 
     def _get_tenant_access_token(self):
         url = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
@@ -54,6 +55,7 @@ class FeishuBitableWriter:
             error_msg = f"获取tenant_access_token失败: {e}"
             log.error(error_msg)
             self._send_exception_alert(error_msg)
+            raise
 
     def _build_record_fields(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -120,3 +122,4 @@ class FeishuBitableWriter:
                 error_msg = f"请求失败: {e}"
                 log.error(f"❌ {error_msg}")
                 self._send_exception_alert(error_msg)
+                raise

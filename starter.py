@@ -1,4 +1,5 @@
 import time
+import sentry_sdk
 from kuaishou.login_ks import login_kuaishou
 from kuaishou.spider_ks import spider_kuaishou
 from tools.logstar import get_logger
@@ -12,9 +13,11 @@ from DrissionPage import Chromium
 from tools.config_loader import (START_TIME, BOT_WEBHOOK, USER_IDS)
 import os
 import sys
+from tools.sentry_config import init_sentry
 
 log = get_logger()
 bot = FeishuBot(BOT_WEBHOOK)
+init_sentry()
 
 if getattr(sys, 'frozen', False):  # 如果是打包后的环境
     os.chdir(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable))
@@ -56,6 +59,7 @@ def main():
 
     except Exception as e:
         log.error(e)
+        sentry_sdk.capture_exception(e)
         bot.send_card_alert(
             title="爬虫",
             task_name="爬虫计划任务运行「异常」时告警-新媒体数据-刘建强",

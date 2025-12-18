@@ -281,6 +281,7 @@ def spider_kuaishou(page_douyin):
             at_all=False,
             at_user_ids=[USER_IDS["刘建强"]]
         )
+        raise
 
 
 if __name__ == '__main__':

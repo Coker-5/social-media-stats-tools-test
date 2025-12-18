@@ -58,3 +58,5 @@ TABLE_KS_ACCOUNTS = _get(['tables', 'kuaishou', 'accounts'])
 TABLE_KS_NOTES = _get(['tables', 'kuaishou', 'notes'])
 
 USER_IDS = _parse_user_ids(_get(['user_ids']))
+
+SENTRY_DSN = _get(['sentry_dsn'])
