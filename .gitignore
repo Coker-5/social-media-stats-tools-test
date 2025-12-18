@@ -1,4 +1,7 @@
 /.idea/
+__pycache__/
+*.py[cod]
+*$py.class
 /logs/
 /test/
 /.venv/
