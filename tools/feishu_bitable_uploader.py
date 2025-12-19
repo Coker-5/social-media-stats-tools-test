@@ -4,9 +4,11 @@ import requests
 import json
 from typing import Dict, List, Any
 from tools.logstar import get_logger
-from tools.config_loader import (APP_ID, APP_SECRET)
+from tools.config_loader import (APP_ID, APP_SECRET, USER_IDS, BOT_WEBHOOK)
+from tools.send_feishu import FeishuBot
 
 log = get_logger()
+bot = FeishuBot(BOT_WEBHOOK)
 
 
 class FeishuBitableWriter:
@@ -18,15 +20,42 @@ class FeishuBitableWriter:
         self.tenant_access_token = None
         self._get_tenant_access_token()
 
+    def _send_exception_alert(self, error_message: str):
+        """发送异常告警"""
+        try:
+            bot.send_card_alert(
+                title="爬虫",
+                task_name="爬虫计划任务运行「异常」时告警-新媒体数据-刘建强",
+                run_script_name=__file__,
+                exception_plan="爬虫-新媒体数据-刘建强",
+                exception_app="飞书多维表格",
+                error_message=error_message,
+                client_ip="10.30.40.150",
+                at_all=False,
+                at_user_ids=[USER_IDS.get("刘建强", "")]
+            )
+        except Exception as alert_e:
+            log.error(f"发送告警失败: {alert_e}")
+            raise
+
     def _get_tenant_access_token(self):
         url = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
         payload = {"app_id": self.app_id, "app_secret": self.app_secret}
-        resp = requests.post(url, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
-        if data.get("code") != 0:
-            raise Exception(f"Failed to get tenant_access_token: {data}")
-        self.tenant_access_token = data["tenant_access_token"]
+        try:
+            resp = requests.post(url, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+            if data.get("code") != 0:
+                error_msg = f"Failed to get tenant_access_token: {data}"
+                log.error(error_msg)
+                self._send_exception_alert(error_msg)
+                raise Exception(error_msg)
+            self.tenant_access_token = data["tenant_access_token"]
+        except Exception as e:
+            error_msg = f"获取tenant_access_token失败: {e}"
+            log.error(error_msg)
+            self._send_exception_alert(error_msg)
+            raise
 
     def _build_record_fields(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -57,13 +86,17 @@ class FeishuBitableWriter:
             if isinstance(data_list, dict):
                 data_list = [data_list]
             else:
-                log.error(f"❌ 传入的数据必须是字典或字典列表，实际类型是: {type(data_list)}")
+                error_msg = f"❌ 传入的数据必须是字典或字典列表，实际类型是: {type(data_list)}"
+                log.error(error_msg)
+                self._send_exception_alert(error_msg)
                 return
 
         for data in data_list:
             # 确保每个元素是字典类型
             if not isinstance(data, dict):
-                log.error(f"❌ 跳过非字典类型的数据: {type(data)}")
+                error_msg = f"❌ 跳过非字典类型的数据: {type(data)}"
+                log.error(error_msg)
+                self._send_exception_alert(error_msg)
                 continue
 
             fields = self._build_record_fields(data)
@@ -82,6 +115,11 @@ class FeishuBitableWriter:
                 resp_data = resp.json()
 
                 if resp_data.get("code") != 0:
-                    log.error(f"❌ 写入失败: {payload['fields']}，因为：{resp.text}")
+                    error_msg = f"写入多维表格 {self.table_id} 失败: {payload['fields']}，因为：{resp.text}"
+                    log.error(f"❌ {error_msg}")
+                    self._send_exception_alert(error_msg)
             except Exception as e:
-                log.error(f"❌ 请求失败: {e}")
+                error_msg = f"请求失败: {e}"
+                log.error(f"❌ {error_msg}")
+                self._send_exception_alert(error_msg)
+                raise

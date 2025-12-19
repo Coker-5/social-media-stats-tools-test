@@ -7,5 +7,7 @@ dependencies = [
     "apscheduler>=3.11.1",
     "drissionpage~=4.1.1.2",
     "loguru~=0.7.3",
+    "pandas>=2.3.3",
     "requests~=2.32.5",
+    "sentry-sdk>=2.48.0",
 ]

@@ -1,6 +1,9 @@
 /.idea/
+__pycache__/
+*.py[cod]
+*$py.class
 /logs/
 /test/
 /.venv/
-/kuaishou
 config/config.json
+/xiaohongshu/statics

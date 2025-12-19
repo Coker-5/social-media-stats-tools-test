@@ -31,14 +31,32 @@ def _get(keys):
         value = value[key]
     return value
 
+def _parse_user_ids(user_ids_list):
+    """将 [{"用户名": "user_id"}, ...] 格式转换为字典"""
+    result = {}
+    for item in user_ids_list:
+        for name, user_id in item.items():
+            result[name] = user_id
+    return result
+
+
+
 # 导出配置项
+# 基础配置
 START_TIME = _get(['start_time'])
 APP_ID = _get(['feishu_config', 'app_info', 'APP_ID'])
 APP_SECRET = _get(['feishu_config', 'app_info', 'APP_SECRET'])
 BOT_WEBHOOK = _get(['feishu_config', 'bot_webhook'])
 
+# 表格配置
 BASE_TOKEN = _get(['tables', 'base_token'])
 TABLE_DY_ACCOUNTS = _get(['tables', 'douyin', 'accounts'])
 TABLE_DY_NOTES = _get(['tables', 'douyin', 'notes'])
 TABLE_XHS_ACCOUNTS = _get(['tables', 'xiaohongshu', 'accounts'])
 TABLE_XHS_NOTES = _get(['tables', 'xiaohongshu', 'notes'])
+TABLE_KS_ACCOUNTS = _get(['tables', 'kuaishou', 'accounts'])
+TABLE_KS_NOTES = _get(['tables', 'kuaishou', 'notes'])
+
+USER_IDS = _parse_user_ids(_get(['user_ids']))
+
+SENTRY_DSN = _get(['sentry_dsn'])
