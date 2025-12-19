@@ -48,55 +48,75 @@ def spider_xhs_accounts():
             # 近七天
             numbers = [elem.text for elem in tab.eles('.number')]
             numbers = cleaning(numbers)
-            play_count = numbers[0]  # 观看
-            play_time = numbers[1]  # 观看总时长
-            homepage_views = numbers[2]  # 主页访客
-            likes = numbers[3]  # 点赞
-            favorites = numbers[4]  # 收藏
-            comments = numbers[5]  # 评论
-            bullet = numbers[6]  # 弹幕
-            followers = numbers[7]  # 笔记涨粉
-            shares = numbers[8]  # 分享
 
-            filter = tab.ele(".filter")
-            filter.ele(".btn").click()
+            # 第一组数据（4个）
+            imp_count = numbers[0]  # 曝光数
+            play_count = numbers[1]  # 观看数
+            cover_click_rate = numbers[2]  # 封面点击率
+            full_view_rate = numbers[3]  # 视频完播率
+
+            # 第二组数据（4个）
+            likes = numbers[4]  # 点赞
+            comments = numbers[5]  # 评论
+            favorites = numbers[6]  # 收藏
+            shares = numbers[7]  # 分享
+
+            # 第三组数据（4个）
+            rise_fans_count = numbers[8]  # 净涨粉
+            new_followers = numbers[9]  # 新增关注
+            cancel_followers = numbers[10]  # 取消关注
+            homepage_views = numbers[11]  # 主页访客
+
+
+            filter = tab.ele("text:近30日")
+            filter.click()
             tab.wait(3)
 
             # 近三十天
             numbers = [elem.text for elem in tab.eles('.number')]
             numbers = cleaning(numbers)
-            last_month_play_count = numbers[0]  # 观看
-            last_month_play_time = numbers[1]  # 观看总时长
-            last_month_homepage_views = numbers[2]  # 主页访客
-            last_month_likes = numbers[3]  # 点赞
-            last_month_favorites = numbers[4]  # 收藏
+
+            last_month_imp_count = numbers[0]  # 曝光数
+            last_month_play_count = numbers[1]  # 观看数
+            last_month_homepage_views = numbers[11]  # 主页访客
+            last_month_likes = numbers[4]  # 点赞
+            last_month_favorites = numbers[6]  # 收藏
             last_month_comments = numbers[5]  # 评论
-            last_month_bullet = numbers[6]  # 弹幕
-            last_month_followers = numbers[7]  # 笔记涨粉
-            last_month_shares = numbers[8]  # 分享
+            last_month_shares = numbers[7]  # 分享
+            last_month_rise_fans_count = numbers[8]  # 净涨粉
+            last_month_new_followers = numbers[9]  # 新增关注
+            last_month_cancel_followers = numbers[10]  # 取消关注
+            last_month_cover_click_rate = numbers[2]  # 封面点击率
+            last_month_full_view_rate = numbers[3]  # 视频完播率
 
             accont_data = {
                 "粉丝": int(fans_num),
                 "获赞": int(likes_num),
+                "近7天曝光": int(imp_count),
                 "近7天观看": int(play_count),
-                "近7天观看总时长": float(play_time),
-                "近7天主页访客": int(homepage_views),
+                "近7天封面点击率": cover_click_rate,
+                "近7天视频完播率": full_view_rate ,
                 "近7天点赞": int(likes),
+                "近7天评论": int(comments),
                 "近7天收藏": int(favorites),
                 "近7天分享": int(shares),
-                "近7天评论": int(comments),
-                "近7天弹幕": int(bullet),
-                "近7天笔记涨粉": int(followers),
+                "近7天净涨粉": int(rise_fans_count),
+                "近7天新增关注": int(new_followers),
+                "近7天取消关注": int(cancel_followers),
+                "近7天主页访客": int(homepage_views),
 
+                "近30天曝光": int(last_month_imp_count),
                 "近30天观看": int(last_month_play_count),
-                "近30天观看总时长": float(last_month_play_time),
+                "近30天封面点击率": last_month_cover_click_rate,
+                "近30天视频完播率": last_month_full_view_rate,
                 "近30天主页访客": int(last_month_homepage_views),
                 "近30天点赞": int(last_month_likes),
                 "近30天收藏": int(last_month_favorites),
                 "近30天分享": int(last_month_shares),
                 "近30天评论": int(last_month_comments),
-                "近30天弹幕": int(last_month_bullet),
-                "近30天笔记涨粉": int(last_month_followers),
+                "近30天净涨粉": int(last_month_rise_fans_count),
+                "近30天新增关注": int(last_month_new_followers),
+                "近30天取消关注": int(last_month_cancel_followers)
             }
 
             log.info(accont_data)
