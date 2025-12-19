@@ -6,4 +6,7 @@ __pycache__/
 /test/
 /.venv/
 config/config.json
-/xiaohongshu/statics
+/config/__pycache__/
+*.pyc
+.DS_Store
+statics/
