@@ -10,3 +10,4 @@ config/config.json
 *.pyc
 .DS_Store
 statics/
+/config/
