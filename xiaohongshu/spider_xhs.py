@@ -9,7 +9,10 @@ from tools.send_feishu import FeishuBot
 from xiaohongshu.parse_xhs import parse_xhs_notes
 import  warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
+from pathlib import Path
 
+
+BASE_DIR = Path(__file__).parent
 log = get_logger()
 tab = None
 bot = FeishuBot(BOT_WEBHOOK)
@@ -137,14 +140,16 @@ def spider_xhs_notes():
 
     notes_datas = []
 
-    os.makedirs("statics", exist_ok=True)
+    statics_dir = BASE_DIR / "statics"
+    os.makedirs(statics_dir, exist_ok=True)
+
     file_name = f"{datetime.now().strftime('%Y-%m-%d-%H-%M')}-小红书-帖子详情数据.xlsx"
     download_btn = tab.ele("text:导出数据")
-    mission = download_btn.click.to_download(save_path='./statics/', rename=file_name)
+    mission = download_btn.click.to_download(save_path=str(statics_dir), rename=file_name)
     mission.wait(show=False)
 
     if mission:
-        notes_datas = parse_xhs_notes(file_path="./statics/" + file_name)
+        notes_datas = parse_xhs_notes(file_path=str(statics_dir / file_name))
 
     return notes_datas
 
