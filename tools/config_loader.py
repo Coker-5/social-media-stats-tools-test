@@ -56,7 +56,11 @@ TABLE_XHS_ACCOUNTS = _get(['tables', 'xiaohongshu', 'accounts'])
 TABLE_XHS_NOTES = _get(['tables', 'xiaohongshu', 'notes'])
 TABLE_KS_ACCOUNTS = _get(['tables', 'kuaishou', 'accounts'])
 TABLE_KS_NOTES = _get(['tables', 'kuaishou', 'notes'])
+TABLE_SPH_ACCOUNTS = _get(['tables', 'shipinhao', 'accounts'])
+TABLE_SPH_NOTES = _get(['tables', 'shipinhao', 'notes'])
 
+# 用户配置
 USER_IDS = _parse_user_ids(_get(['user_ids']))
 
+# sentry配置
 SENTRY_DSN = _get(['sentry_dsn'])

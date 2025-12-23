@@ -2,6 +2,8 @@ import time
 import sentry_sdk
 from kuaishou.login_ks import login_kuaishou
 from kuaishou.spider_ks import spider_kuaishou
+from shipinhao.login_sph import login_shipinhgao
+from shipinhao.spider_sph import spider_shipinhao
 from tools.logstar import get_logger
 from douyin.login_dy import login_douyin
 from douyin.spider_dy import spider_douyin
@@ -77,6 +79,24 @@ def run_kuaishou_task(browser):
         return False
 
 
+def run_shipinhao_task(browser):
+    """执行视频号爬虫任务"""
+    try:
+        log.info("----------------------开始采集视频号数据----------------------")
+        page_shipinhao = browser.new_tab()
+        page_shipinhao.wait(2)
+        login_shipinhgao(page_shipinhao)
+        spider_shipinhao(page_shipinhao)
+        time.sleep(3)
+        log.info("----------------------视频号数据采集完成----------------------")
+        return True
+    except Exception as e:
+        log.error(f"视频号爬虫执行失败: {e}")
+        log.error(traceback.format_exc())
+        sentry_sdk.capture_exception(e)
+        return False
+
+
 def main():
     try:
         # 创建浏览器实例
@@ -88,7 +108,8 @@ def main():
         results = {
             "douyin": False,
             "xiaohongshu": False,
-            "kuaishou": False
+            "kuaishou": False,
+            "shipinhao": False,
         }
 
         # 执行抖音任务
@@ -99,6 +120,9 @@ def main():
 
         # 执行快手任务
         results["kuaishou"] = run_kuaishou_task(browser)
+
+        # 执行视频号任务
+        results["shipinhao"] = run_shipinhao_task(browser)
 
         # 统计执行结果
         success_count = sum(results.values())
