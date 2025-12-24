@@ -76,7 +76,7 @@ def spider_sph_notes():
     statics_dir = BASE_DIR / "statics"
     os.makedirs(statics_dir, exist_ok=True)
 
-    file_name = f"{datetime.now().strftime('%Y_%m_%d_%H:%M')}-视频号-帖子详情数据.csv"
+    file_name = f"{datetime.now().strftime('%Y_%m_%d_%H%M')}-视频号-帖子详情数据.csv"
     download_btn = container.ele(".filter-extra", timeout=2)
     mission = download_btn.click.to_download(save_path=str(statics_dir), rename=file_name)
     mission.wait(show=False)

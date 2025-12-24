@@ -143,7 +143,7 @@ def spider_xhs_notes():
     statics_dir = BASE_DIR / "statics"
     os.makedirs(statics_dir, exist_ok=True)
 
-    file_name = f"{datetime.now().strftime('%Y-%m-%d-%H-%M')}-小红书-帖子详情数据.xlsx"
+    file_name = f"{datetime.now().strftime('%Y_%m_%d_%H%M')}-小红书-帖子详情数据.xlsx"
     download_btn = tab.ele("text:导出数据")
     mission = download_btn.click.to_download(save_path=str(statics_dir), rename=file_name)
     mission.wait(show=False)
