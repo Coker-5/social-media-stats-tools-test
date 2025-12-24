@@ -3,7 +3,7 @@ from datetime import datetime
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
-from tools.config_loader import (BASE_TOKEN, TABLE_XHS_NOTES, TABLE_XHS_ACCOUNTS, BOT_WEBHOOK, USER_IDS)
+from tools.config_loader import (BASE_TOKEN, TABLE_XHS_NOTES, TABLE_XHS_ACCOUNTS, BOT_WEBHOOK, DEVELOPERS_ID_LIST)
 from tools.data_clean import cleaning
 from tools.send_feishu import FeishuBot
 from xiaohongshu.parse_xhs import parse_xhs_notes
@@ -191,7 +191,7 @@ def spider_xiaohongshu(page_xiaohongshu):
             error_message=f"任务失败，因为{e}",
             client_ip="10.30.40.150",
             at_all=False,
-            at_user_ids=[USER_IDS["刘建强"]]  # 替换为实际的用户ID
+            at_user_ids=DEVELOPERS_ID_LIST
         )
         raise
     return final_data

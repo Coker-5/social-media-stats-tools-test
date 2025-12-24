@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from tools.config_loader import BOT_WEBHOOK, USER_IDS, BASE_TOKEN, TABLE_KS_ACCOUNTS, TABLE_KS_NOTES
+from tools.config_loader import BOT_WEBHOOK, DEVELOPERS_ID_LIST, BASE_TOKEN, TABLE_KS_ACCOUNTS, TABLE_KS_NOTES
 from tools.data_clean import cleaning
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
@@ -279,7 +279,7 @@ def spider_kuaishou(page_douyin):
             error_message=f"任务失败，因为{e}",
             client_ip="10.30.40.150",
             at_all=False,
-            at_user_ids=[USER_IDS["刘建强"]]
+            at_user_ids=DEVELOPERS_ID_LIST
         )
         raise
 

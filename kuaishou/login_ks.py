@@ -2,7 +2,7 @@ import time
 from DrissionPage import Chromium
 from tools.logstar import get_logger
 from tools.send_feishu import FeishuBot
-from tools.config_loader import (BOT_WEBHOOK, USER_IDS)
+from tools.config_loader import (BOT_WEBHOOK, OPERATIONS_ID_LIST)
 
 log = get_logger()
 bot = FeishuBot(BOT_WEBHOOK)
@@ -25,7 +25,7 @@ def login_kuaishou(page_kuaishou):
                 exception_plan=f"爬虫-{platform}-新媒体数据采集",
                 exception_app=f"{platform}",
                 error_message=f"【{platform}】登录已失效，请尽快重新扫码登录",
-                at_user_ids=[USER_IDS["罗粤"], USER_IDS["曾婉婷"]]
+                at_user_ids=OPERATIONS_ID_LIST
             )
             while True:
                 log.info("登录状态检查中...")
@@ -39,7 +39,7 @@ def login_kuaishou(page_kuaishou):
                     exception_plan=f"爬虫-{platform}-新媒体数据采集",
                     exception_app=f"{platform}",
                     error_message=f"【{platform}】登录已失效，请尽快重新扫码登录",
-                    at_user_ids=[USER_IDS["罗粤"], USER_IDS["曾婉婷"]]
+                    at_user_ids=OPERATIONS_ID_LIST
                 )
                 log.info("登录状态检查中...")
                 time.sleep(60)

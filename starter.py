@@ -12,7 +12,7 @@ from xiaohongshu.login_xhs import login_xiaohongshu
 from xiaohongshu.spider_xhs import spider_xiaohongshu
 from apscheduler.schedulers.blocking import BlockingScheduler
 from DrissionPage import Chromium
-from tools.config_loader import (START_TIME, BOT_WEBHOOK, USER_IDS)
+from tools.config_loader import (START_TIME, BOT_WEBHOOK, DEVELOPERS_ID_LIST)
 import os
 import sys
 import traceback
@@ -151,7 +151,7 @@ def main():
             error_message=f"任务失败: {str(e)[:200]}",
             client_ip="10.30.40.150",
             at_all=False,
-            at_user_ids=[USER_IDS["刘建强"]]
+            at_user_ids=DEVELOPERS_ID_LIST
         )
 
 

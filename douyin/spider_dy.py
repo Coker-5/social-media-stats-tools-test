@@ -1,7 +1,7 @@
 from DrissionPage import Chromium
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
-from tools.config_loader import (BASE_TOKEN, TABLE_DY_NOTES, TABLE_DY_ACCOUNTS, BOT_WEBHOOK, USER_IDS)
+from tools.config_loader import (BASE_TOKEN, TABLE_DY_NOTES, TABLE_DY_ACCOUNTS, BOT_WEBHOOK, DEVELOPERS_ID_LIST)
 from douyin.parse_dy import parse_douyin_notes  # 导入解析函数
 from tools.send_feishu import FeishuBot
 
@@ -143,7 +143,58 @@ def spider_douyin_notes():
 
 
 # 私信数据
+
+
+
 # 评论数据
+def spider_douyin_comments(tab):
+    """
+    互动管理-评论管理
+    """
+    log.info("开始采集评论数据...")
+    tab.get(url='https://creator.douyin.com/creator-micro/interactive/comment')
+    tab.wait(2)
+
+    all_notes_items = []
+    cursor = ""  # 初始游标为空
+    has_more = True
+
+    tab.change_mode('s')
+
+    while has_more:
+        params = {
+            "cursor": cursor,
+            "aid": "2906",
+        }
+
+        url = 'https://creator.douyin.com/aweme/v1/creator/item/list/'
+
+        tab.get(url, params=params)
+        res_data = tab.response.json()
+        items = res_data["item_info_list"]
+        for item in items:
+            item_info = {
+                "item_id": item.get("item_id"),  # 加密 ID
+                "title": item.get("title")
+            }
+            all_notes_items.append(item_info)
+            log.info(f"成功获取帖子: {item_info['title']} | ID: {item_info['item_id']}")
+
+        # 更新分页参数
+        has_more = res_data.get("has_more", False)
+        cursor = res_data.get("cursor", "")
+
+        tab.wait(1)  # 频率控制
+
+    log.info(f"帖子列表采集完成，共获取 {len(all_notes_items)} 个帖子")
+
+    # 后续遍历逻辑示例：
+    # for note in all_notes:
+    #     fetch_comments_by_item_id(note['item_id'])
+
+    return all_notes_items
+
+
 
 
 # 保存数据
@@ -160,7 +211,7 @@ def spider_douyin(page_douyin):
         tab = page_douyin
 
         accounts_data = spider_douyin_account()
-        # 保存账号数据
+        # # 保存账号数据
         save_datas(table_id=TABLE_DY_ACCOUNTS, datas=accounts_data)
 
         notes_datas = spider_douyin_notes()
@@ -184,7 +235,7 @@ def spider_douyin(page_douyin):
             error_message=f"任务失败，因为{e}",
             client_ip="10.30.40.150",
             at_all=False,
-            at_user_ids=[USER_IDS["刘建强"]]  # 替换为实际的用户ID
+            at_user_ids=DEVELOPERS_ID_LIST
         )
         raise
     return final_data
@@ -192,4 +243,5 @@ def spider_douyin(page_douyin):
 
 if __name__ == '__main__':
     tab = Chromium().latest_tab
-    spider_douyin(tab)
+    # spider_douyin(tab)
+    spider_douyin_comments(tab)

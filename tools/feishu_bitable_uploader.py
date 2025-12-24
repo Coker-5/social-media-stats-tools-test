@@ -4,7 +4,7 @@ import requests
 import json
 from typing import Dict, List, Any
 from tools.logstar import get_logger
-from tools.config_loader import (APP_ID, APP_SECRET, USER_IDS, BOT_WEBHOOK)
+from tools.config_loader import (APP_ID, APP_SECRET, DEVELOPERS_ID_LIST, BOT_WEBHOOK)
 from tools.send_feishu import FeishuBot
 
 log = get_logger()
@@ -32,7 +32,7 @@ class FeishuBitableWriter:
                 error_message=error_message,
                 client_ip="10.30.40.150",
                 at_all=False,
-                at_user_ids=[USER_IDS.get("刘建强", "")]
+                at_user_ids=DEVELOPERS_ID_LIST
             )
         except Exception as alert_e:
             log.error(f"发送告警失败: {alert_e}")
@@ -82,7 +82,6 @@ class FeishuBitableWriter:
 
         # 确保传入的是列表类型
         if not isinstance(data_list, list):
-            # 如果是单个字典，转换为列表
             if isinstance(data_list, dict):
                 data_list = [data_list]
             else:
