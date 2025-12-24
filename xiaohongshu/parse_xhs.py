@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tools.config_loader import BOT_WEBHOOK, USER_IDS
+from tools.config_loader import BOT_WEBHOOK
 from tools.logstar import get_logger
 from tools.send_feishu import FeishuBot
 
@@ -54,17 +54,6 @@ def parse_xhs_notes(file_path):
             notes_data.append(note_data)
     except Exception as e:
         log.error(e)
-        bot.send_card_alert(
-            title="爬虫",
-            task_name="爬虫计划任务运行「异常」时告警-新媒体数据-刘建强",
-            run_script_name=f"{__file__}",
-            exception_plan="小红书-新媒体数据-刘建强",
-            exception_app="小红书",
-            error_message=f"任务失败，因为{e}",
-            client_ip="10.30.40.150",
-            at_all=False,
-            at_user_ids=[USER_IDS["刘建强"]]  # 替换为实际的用户ID
-        )
         raise
 
 
