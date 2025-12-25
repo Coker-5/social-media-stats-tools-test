@@ -4,7 +4,5 @@ __pycache__/
 /logs/
 /test/
 /.venv/
-config/config.json
-/config/__pycache__/
 statics/
 /config/
