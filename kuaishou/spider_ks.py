@@ -25,9 +25,10 @@ def spider_ks_accounts():
     # 粉丝数据
     fans_num = 0
     fans_element = tab.eles('.user-cnt__item', timeout=2)
-    if fans_element:
-        fans_num = fans_element[0].text
-        fans_num = re.search(r'\d+', fans_num)[0]
+    fans_element_text = [i.text for i in fans_element]
+    fans_element_text = cleaning(fans_element_text)
+    if fans_element_text:
+        fans_num = fans_element_text[0]
 
     # 浏览数据
     # 近七天
@@ -75,27 +76,28 @@ def spider_ks_accounts():
     last_3month_comments = numbers[4]  # 评论量
     last_3month_shares = numbers[5]  # 分享量
 
+
     accont_data = {
         "粉丝": int(fans_num),
 
         "近7天播放量": int(play_count),
         "近7天点赞量": int(likes),
         "近7天净增粉丝量": int(followers),
-        "近7天完播率": completion_rate,
+        "近7天完播率": str(completion_rate),
         "近7天评论量": int(comments),
         "近7天分享量": int(shares),
 
         "近30天播放量": int(last_month_play_count),
         "近30天点赞量": int(last_month_likes),
         "近30天净增粉丝量": int(last_month_followers),
-        "近30天完播率": last_month_completion_rate,
+        "近30天完播率": str(last_month_completion_rate),
         "近30天评论量": int(last_month_comments),
         "近30天分享量": int(last_month_shares),
 
         "近90天播放量": int(last_3month_play_count),
         "近90天点赞量": int(last_3month_likes),
         "近90天净增粉丝量": int(last_3month_followers),
-        "近90天完播率": last_3month_completion_rate,
+        "近90天完播率": str(last_3month_completion_rate),
         "近90天评论量": int(last_3month_comments),
         "近90天分享量": int(last_3month_shares),
     }

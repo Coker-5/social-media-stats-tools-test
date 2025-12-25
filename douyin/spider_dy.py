@@ -1,4 +1,5 @@
 from DrissionPage import Chromium
+from tools.data_clean import cleaning
 from tools.feishu_bitable_uploader import FeishuBitableWriter
 from tools.logstar import get_logger
 from tools.config_loader import (BASE_TOKEN, TABLE_DY_NOTES, TABLE_DY_ACCOUNTS, BOT_WEBHOOK, DEVELOPERS_ID_LIST)
@@ -20,9 +21,12 @@ def spider_douyin_account():
     # 粉丝数据
     parent_ele = tab.ele('.statics-kyUhqC')
     numbers = parent_ele.eles('.number-No6ev9')
+    numbers_text = [i.text for i in numbers]
+    numbers_text = cleaning(numbers_text)
 
-    fans_num = numbers[1].text  # 粉丝
-    likes_num = numbers[2].text  # 获赞
+    fans_num = numbers_text[1]  # 粉丝
+    likes_num = numbers_text[2]  # 获赞
+
 
     # 浏览数据
     play_count = 0  # 播放量
@@ -41,13 +45,15 @@ def spider_douyin_account():
 
     # 近七天
     parent_ele = tab.eles('.number-vDKr2F')
-    if parent_ele and len(parent_ele) > 3:
-        play_count = parent_ele[0].text  # 播放量
-        homepage_views = parent_ele[1].text  # 主页访问量
-        likes = parent_ele[2].text  # 作品点赞
-        shares = parent_ele[3].text  # 作品分享
-        comments = parent_ele[4].text  # 作品评论
-        followers = parent_ele[5].text  # 净增粉丝
+    parent_ele_text = [i.text for i in parent_ele]
+    parent_ele_text = cleaning(parent_ele_text)
+    if parent_ele_text and len(parent_ele_text) > 3:
+        play_count = parent_ele_text[0]  # 播放量
+        homepage_views = parent_ele_text[1]  # 主页访问量
+        likes = parent_ele_text[2]  # 作品点赞
+        shares = parent_ele_text[3]  # 作品分享
+        comments = parent_ele_text[4]  # 作品评论
+        followers = parent_ele_text[5]  # 净增粉丝
 
     # 昨天
     tab.ele("@role=combobox").click()
@@ -57,13 +63,15 @@ def spider_douyin_account():
     tab.wait(3)
 
     parent_ele = tab.eles('.number-vDKr2F')
-    if parent_ele and len(parent_ele) > 3:
-        yesterday_play_count = parent_ele[0].text  # 播放量
-        yesterday_homepage_views = parent_ele[1].text  # 主页访问量
-        yesterday_likes = parent_ele[2].text  # 作品点赞
-        yesterday_shares = parent_ele[3].text  # 作品分享
-        yesterday_comments = parent_ele[4].text  # 作品评论
-        yesterday_followers = parent_ele[5].text  # 净增粉丝
+    parent_ele_text = [i.text for i in parent_ele]
+    parent_ele_text = cleaning(parent_ele_text)
+    if parent_ele_text and len(parent_ele_text) > 3:
+        yesterday_play_count = parent_ele_text[0]  # 播放量
+        yesterday_homepage_views = parent_ele_text[1]  # 主页访问量
+        yesterday_likes = parent_ele_text[2]  # 作品点赞
+        yesterday_shares = parent_ele_text[3]  # 作品分享
+        yesterday_comments = parent_ele_text[4]  # 作品评论
+        yesterday_followers = parent_ele_text[5]  # 净增粉丝
 
     accont_data = {
         "粉丝": int(fans_num),
@@ -243,5 +251,4 @@ def spider_douyin(page_douyin):
 
 if __name__ == '__main__':
     tab = Chromium().latest_tab
-    # spider_douyin(tab)
-    spider_douyin_comments(tab)
+    spider_douyin(tab)

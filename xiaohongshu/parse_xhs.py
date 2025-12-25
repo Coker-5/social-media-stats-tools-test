@@ -1,6 +1,7 @@
 import pandas as pd
 
 from tools.config_loader import BOT_WEBHOOK
+from tools.data_clean import cleaning
 from tools.logstar import get_logger
 from tools.send_feishu import FeishuBot
 
@@ -46,7 +47,7 @@ def parse_xhs_notes(file_path):
                 "评论": int(comment_count) if pd.notna(comment_count) else 0,
                 "分享": int(share_count) if pd.notna(share_count) else 0,
                 "收藏": int(fav_count) if pd.notna(fav_count) else 0,
-                "封面点击率": str(float(cover_click_rate) * 100) if pd.notna(cover_click_rate) else "0",
+                "封面点击率": f"{float(cover_click_rate) * 100:.2f}" if pd.notna(cover_click_rate) else "0",
                 "人均观看时长": int(view_time_avg) if pd.notna(view_time_avg) else 0,
             }
             log.info(note_data)
