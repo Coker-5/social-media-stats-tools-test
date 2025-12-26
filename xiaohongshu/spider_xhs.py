@@ -49,8 +49,24 @@ def spider_xhs_accounts():
 
             # 浏览数据
             # 近七天
-            numbers = [elem.text for elem in tab.eles('.number')]
-            numbers = cleaning(numbers)
+            creator_blocks = tab.eles('.creator-block  default-cursor')
+            numbers_with_units_week = []
+
+            for block in creator_blocks:
+                # 获取数字和单位
+                num_elem = block.ele('.number')
+                unit_elem = block.ele('.unit', timeout=0)  # timeout=0表示立即返回，找不到返回None
+
+                if num_elem:
+                    num_text = num_elem.text
+                    if unit_elem:
+                        num_text += unit_elem.text
+                    numbers_with_units_week.append(num_text)
+                else:
+                    numbers_with_units_week.append("")
+
+            # 清理数据
+            numbers = cleaning(numbers_with_units_week)
 
             # 第一组数据（4个）
             imp_count = numbers[0]  # 曝光数
@@ -76,8 +92,24 @@ def spider_xhs_accounts():
             tab.wait(3)
 
             # 近三十天
-            numbers = [elem.text for elem in tab.eles('.number')]
-            numbers = cleaning(numbers)
+            creator_blocks = tab.eles('.creator-block  default-cursor')
+            numbers_with_units_month = []
+
+            for block in creator_blocks:
+                # 获取数字和单位
+                num_elem = block.ele('.number')
+                unit_elem = block.ele('.unit', timeout=0)  # timeout=0表示立即返回，找不到返回None
+
+                if num_elem:
+                    num_text = num_elem.text
+                    if unit_elem:
+                        num_text += unit_elem.text
+                    numbers_with_units_month.append(num_text)
+                else:
+                    numbers_with_units_month.append("")
+
+            # 清理数据
+            numbers = cleaning(numbers_with_units_month)
 
             last_month_imp_count = numbers[0]  # 曝光数
             last_month_play_count = numbers[1]  # 观看数
