@@ -26,8 +26,9 @@ def spider_sph_accounts():
     tab.wait(6)
 
     # 粉丝数据
-    fans_num = tab.ele('.finder-info-num', timeout=2).text
-    fans_num = fans_num if fans_num else 0
+    fans_num = tab.eles('.finder-info-num', timeout=2)
+    fans_num = fans_num[1].text
+    fans_num = cleaning([fans_num])[0]
 
 
     # 浏览数据

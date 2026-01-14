@@ -1,3 +1,6 @@
+import re
+from datetime import datetime, timedelta
+
 from DrissionPage import Chromium
 from tools.data_clean import cleaning
 from tools.feishu_bitable_uploader import FeishuBitableWriter
@@ -26,7 +29,6 @@ def spider_douyin_account():
 
     fans_num = numbers_text[1]  # 粉丝
     likes_num = numbers_text[2]  # 获赞
-
 
     # 浏览数据
     play_count = 0  # 播放量
@@ -153,6 +155,107 @@ def spider_douyin_notes():
 # 私信数据
 
 
+# 获取抖音创作者指定时间范围发布的视频
+def get_recent_month_videos(tab, initial_cursor=None, days=720):
+    """
+    获取抖音创作者近一个月发布的视频
+    Args:
+        initial_cursor: 初始cursor，如果不传则从第一页开始
+        days: 近多少天，默认30天
+    Returns:
+        近一个月发布的视频列表
+    """
+    # 计算近一个月的时间点
+    one_month_ago = datetime.now() - timedelta(days=days)
+
+    videos = []
+    cursor = initial_cursor
+    has_more = True
+    request_count = 0
+    max_requests = 100  # 防止无限循环
+
+    # 从中文日期字符串解析时间
+    def parse_chinese_date(date_str: str) -> datetime:
+        # 匹配格式: "发布于2025年12月30日 21:26"
+        pattern = r'发布于(\d{4})年(\d{1,2})月(\d{1,2})日 (\d{1,2}):(\d{1,2})'
+        match = re.search(pattern, date_str)
+        if match:
+            year, month, day, hour, minute = map(int, match.groups())
+            return datetime(year, month, day, hour, minute)
+        return datetime.min
+
+    while has_more and request_count < max_requests:
+        # 构建请求URL
+        url = f'https://creator.douyin.com/aweme/v1/creator/item/list/?cursor={cursor or ""}&aid=2906'
+
+        # 请求头
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "accept-language": "zh-CN,zh;q=0.9",
+            "agw-js-conv": "str",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "priority": "u=1, i",
+            "referer": "https://creator.douyin.com/creator-micro/interactive/comment",
+            "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-secsdk-csrf-token": "000100000001af774ad51143a894453b39afdfc43b91845b10858a7c8740fcc65fee54dd5bfb1888608ec7208bd7"
+        }
+
+        try:
+            tab.get(url, headers=headers, timeout=30)
+            tab.response.raise_for_status()
+
+            data = tab.response.json()
+
+            # 更新分页信息
+            cursor = data['cursor']
+            has_more = data['has_more']
+            request_count += 1
+
+            # 处理当前页的视频
+            for item in data.get('item_info_list', []):
+                # 解析发布时间
+                create_time_str = item['create_time']
+                # 转换为datetime对象
+                try:
+                    publish_time = parse_chinese_date(create_time_str)
+
+                    # 检查是否在指定时间范围
+                    if publish_time >= one_month_ago:
+                        video_info = {
+                            'title': item['title'],
+                            'item_id': item['item_id'],
+                            'item_id_plain': item['item_id_plain'],
+                            'publish_time': publish_time.strftime('%Y-%m-%d %H:%M:%S'),
+                            'item_link': item['item_link'],
+                            'comment_count': item['comment_count'],
+                        }
+                        videos.append(video_info)
+                    else:
+                        # 如果找到指定时间范围的视频，且是倒序排列，可以提前结束
+                        has_more = False
+                        break
+                except Exception as e:
+                    log.error(f"解析时间失败: {create_time_str}, 错误: {e}")
+                    continue
+
+            # 如果没有更多数据或已找到超过时间范围的数据，停止循环
+            if not has_more:
+                break
+
+            tab.wait(2)
+
+        except Exception as e:
+            log.error(f"发生错误: {e}")
+            break
+    return videos
+
 
 # 评论数据
 def spider_douyin_comments(tab):
@@ -161,46 +264,11 @@ def spider_douyin_comments(tab):
     """
     log.info("开始采集评论数据...")
     tab.get(url='https://creator.douyin.com/creator-micro/interactive/comment')
-    tab.wait(2)
-
-    all_notes_items = []
-    cursor = ""  # 初始游标为空
-    has_more = True
-
     tab.change_mode('s')
 
-    while has_more:
-        params = {
-            "cursor": cursor,
-            "aid": "2906",
-        }
+    video_items = get_recent_month_videos(tab=tab)
+    print(video_items)
 
-        url = 'https://creator.douyin.com/aweme/v1/creator/item/list/'
-
-        tab.get(url, params=params)
-        res_data = tab.response.json()
-        items = res_data["item_info_list"]
-        for item in items:
-            item_info = {
-                "item_id": item.get("item_id"),  # 加密 ID
-                "title": item.get("title")
-            }
-            all_notes_items.append(item_info)
-            log.info(f"成功获取帖子: {item_info['title']} | ID: {item_info['item_id']}")
-
-        # 更新分页参数
-        has_more = res_data.get("has_more", False)
-        cursor = res_data.get("cursor", "")
-
-        tab.wait(1)  # 频率控制
-
-    log.info(f"帖子列表采集完成，共获取 {len(all_notes_items)} 个帖子")
-
-    # 后续遍历逻辑示例：
-    # for note in all_notes:
-    #     fetch_comments_by_item_id(note['item_id'])
-
-    return all_notes_items
 
 
 

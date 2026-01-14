@@ -31,7 +31,7 @@ def is_douyin_login(page_douyin):
         return False
 
 
-def send_login_alert(platform: str, reason: str = "登录已失效") -> float:
+def send_login_alert(platform: str, reason: str = "登录已失效", color: str ="yellow") -> float:
     """发送登录告警"""
     bot.send_card_alert(
         title="登录",
@@ -39,18 +39,18 @@ def send_login_alert(platform: str, reason: str = "登录已失效") -> float:
         task_name=f"监控告警-{platform}登录状态",
         exception_plan=f"爬虫-{platform}-新媒体数据采集",
         exception_app=platform,
-        error_message=f"【{platform}】{reason}，请尽快重新扫码登录",
+        error_message=f"【{platform}】{reason}",
         at_user_ids=OPERATIONS_ID_LIST
     )
     log.info(f"发送提醒: {platform} {reason}")
     return time.time()
 
 
-def login_douyin(page_douyin, alert_interval=180, timeout_limit=1200):
+def login_douyin(page_douyin, alert_interval=300, timeout_limit=1200):
     """
     登录抖音创作者中心
     :param page_douyin: 浏览器标签页对象
-    :param alert_interval: 告警频率间隔（秒），默认3分钟
+    :param alert_interval: 告警频率间隔（秒），默认5分钟
     :param timeout_limit: 最大等待扫码时间（秒），默认20分钟
     """
     try:
@@ -66,26 +66,26 @@ def login_douyin(page_douyin, alert_interval=180, timeout_limit=1200):
         # 检查初始登录状态
         if is_douyin_login(tab):
             log.info(f"{platform}创作者中心---已成功登录")
-            return
+            return True
         else:
             log.warning(f"{platform}创作者中心---登录已失效，请重新扫码登录")
-            last_alert_time = send_login_alert(platform)
+            last_alert_time = send_login_alert(platform, reason="登录已失效，请尽快重新扫码登录")
 
         # 等待登录循环
         while True:
             if is_douyin_login(tab):
                 log.info(f"{platform}创作者中心---已成功登录")
-                break
+                return True
 
             current_time = time.time()
             if current_time - start_wait_time > timeout_limit:
                 error_msg = f"{platform}登录已超时，请联系管理员"
                 log.error(error_msg)
                 send_login_alert(platform, reason=f"登录已超时，请联系管理员")
-                break
+                return False
 
             if current_time - last_alert_time >= alert_interval:
-                last_alert_time = send_login_alert(platform)
+                last_alert_time = send_login_alert(platform, reason="登录已失效，请尽快重新扫码登录")
 
             # 轮询间隔
             elapsed_time = int(current_time - start_wait_time)
@@ -94,7 +94,7 @@ def login_douyin(page_douyin, alert_interval=180, timeout_limit=1200):
 
     except Exception as e:
         log.error(f"登录时发生错误: {e}", exc_info=True)
-        raise
+        return False
 
 
 if __name__ == '__main__':

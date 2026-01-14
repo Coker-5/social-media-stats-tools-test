@@ -13,8 +13,6 @@ from xiaohongshu.spider_xhs import spider_xiaohongshu
 from apscheduler.schedulers.blocking import BlockingScheduler
 from DrissionPage import Chromium
 from tools.config_loader import (START_TIME, BOT_WEBHOOK, DEVELOPERS_ID_LIST)
-import os
-import sys
 import traceback
 from tools.sentry_config import init_sentry
 
@@ -22,8 +20,10 @@ log = get_logger()
 bot = FeishuBot(BOT_WEBHOOK)
 init_sentry()
 
-if getattr(sys, 'frozen', False):  # 如果是打包后的环境
-    os.chdir(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable))
+from DrissionPage import ChromiumOptions
+co = ChromiumOptions()
+browser_path = r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+co.set_browser_path(browser_path)
 
 
 def run_douyin_task(browser):
@@ -32,11 +32,15 @@ def run_douyin_task(browser):
         log.info("----------------------开始采集抖音数据----------------------")
         page_douyin = browser.latest_tab
         page_douyin.wait(2)
-        login_douyin(page_douyin)
-        spider_douyin(page_douyin)
-        time.sleep(3)
-        log.info("----------------------抖音数据采集完成----------------------")
-        return True
+        login_statu = login_douyin(page_douyin)
+        if login_statu:
+            spider_douyin(page_douyin)
+            time.sleep(3)
+            log.info("----------------------抖音数据采集完成----------------------")
+            return True
+        else:
+            return False
+
     except Exception as e:
         log.error(f"抖音爬虫执行失败: {e}")
         log.error(traceback.format_exc())
@@ -50,11 +54,14 @@ def run_xiaohongshu_task(browser):
         log.info("----------------------开始采集小红书数据----------------------")
         page_xiaohongshu = browser.new_tab()
         page_xiaohongshu.wait(2)
-        login_xiaohongshu(page_xiaohongshu)
-        spider_xiaohongshu(page_xiaohongshu)
-        time.sleep(3)
-        log.info("----------------------小红书数据采集完成----------------------")
-        return True
+        login_statu = login_xiaohongshu(page_xiaohongshu)
+        if login_statu:
+            spider_xiaohongshu(page_xiaohongshu)
+            time.sleep(3)
+            log.info("----------------------小红书数据采集完成----------------------")
+            return True
+        else:
+            return False
     except Exception as e:
         log.error(f"小红书爬虫执行失败: {e}")
         log.error(traceback.format_exc())
@@ -68,10 +75,14 @@ def run_kuaishou_task(browser):
         log.info("----------------------开始采集快手数据----------------------")
         page_kuaishou = browser.new_tab()
         page_kuaishou.wait(2)
-        login_kuaishou(page_kuaishou)
-        spider_kuaishou(page_kuaishou)
-        log.info("----------------------快手数据采集完成----------------------")
-        return True
+        login_statu = login_kuaishou(page_kuaishou)
+        if login_statu:
+            spider_kuaishou(page_kuaishou)
+            time.sleep(3)
+            log.info("----------------------快手数据采集完成----------------------")
+            return True
+        else:
+            return False
     except Exception as e:
         log.error(f"快手爬虫执行失败: {e}")
         log.error(traceback.format_exc())
@@ -85,11 +96,14 @@ def run_shipinhao_task(browser):
         log.info("----------------------开始采集视频号数据----------------------")
         page_shipinhao = browser.new_tab()
         page_shipinhao.wait(2)
-        login_shipinhgao(page_shipinhao)
-        spider_shipinhao(page_shipinhao)
-        time.sleep(3)
-        log.info("----------------------视频号数据采集完成----------------------")
-        return True
+        login_statu = login_shipinhgao(page_shipinhao, alert_interval=480, timeout_limit=7200)
+        if login_statu:
+            spider_shipinhao(page_shipinhao)
+            time.sleep(3)
+            log.info("----------------------视频号数据采集完成----------------------")
+            return True
+        else:
+            return False
     except Exception as e:
         log.error(f"视频号爬虫执行失败: {e}")
         log.error(traceback.format_exc())
@@ -100,7 +114,7 @@ def run_shipinhao_task(browser):
 def main():
     try:
         # 创建浏览器实例
-        browser = Chromium()
+        browser = Chromium(co)
         browser.wait(2)
         log.info(f"----------------------任务开始执行----------------------")
 
@@ -156,7 +170,8 @@ def main():
 
 
 if __name__ == '__main__':
-    hours, minutes, seconds = START_TIME.split(':')
-    scheduler = BlockingScheduler()
-    scheduler.add_job(func=main, trigger='cron', hour=int(hours), minute=int(minutes), second=int(seconds), timezone='Asia/Shanghai')
-    scheduler.start()
+    # hours, minutes, seconds = START_TIME.split(':')
+    # scheduler = BlockingScheduler()
+    # scheduler.add_job(func=main, trigger='cron', hour=int(hours), minute=int(minutes), second=int(seconds), timezone='Asia/Shanghai')
+    # scheduler.start()
+    main()

@@ -77,8 +77,52 @@ def spider_ks_accounts():
     last_3month_shares = numbers[5]  # 分享量
 
 
+    # 昨天
+    tab.change_mode('s')
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Origin": "https://cp.kuaishou.com",
+        "Referer": "https://cp.kuaishou.com/profile",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "X-Requested-With": "XMLHttpRequest",
+        "returnSetRootDomainLoginUrl": "true",
+        "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"macOS\""
+    }
+    url = "https://cp.kuaishou.com/rest/cp/creator/analysis/pc/home/author/overview"
+    data = {
+        "timeType": 1,
+        "kuaishou.web.cp.api_ph": "9097fe9244498e1c9b77fa80fd72d0545190"
+    }
+    data = json.dumps(data, separators=(',', ':'))
+    response = tab.post(url, headers=headers, data=data)
+    result_data = response.json()
+    yesterday_nums = [item["trendData"][-1]["count"] for item in result_data["data"]["basicData"]]
+    yesterday_nums = cleaning(yesterday_nums)
+    yesterday_play = yesterday_nums[0]
+    yesterday_likes = yesterday_nums[1]
+    yesterday_followers = yesterday_nums[2]
+    yesterday_completion = yesterday_nums[3]
+    yesterday_comments = yesterday_nums[4]
+    yesterday_shares = yesterday_nums[5]
+
+
+
     accont_data = {
         "粉丝": int(fans_num),
+
+        "昨日播放量": int(yesterday_play),
+        "昨日点赞量": int(yesterday_likes),
+        "昨日净增粉丝量": int(yesterday_followers),
+        "昨日完播率": str(yesterday_completion),
+        "昨日评论量": int(yesterday_comments),
+        "昨日分享量": int(yesterday_shares),
 
         "近7天播放量": int(play_count),
         "近7天点赞量": int(likes),

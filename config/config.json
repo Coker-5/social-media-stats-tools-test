@@ -1,34 +1,47 @@
 {
+  "name": "TEST",
   "start_time": "11:00:00",
   "feishu_config": {
     "app_info": {
-      "APP_ID": "",
-      "APP_SECRET": ""
+      "APP_ID": "cli_a9a4225eacf8dbd2",
+      "APP_SECRET": "hPeZj4rMpk9wL9upHZiA3cLdujgF85kt"
     },
-    "bot_webhook": ""
+    "bot_webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/73f697fd-e838-44f9-abb9-bd3262fc11f2"
   },
   "tables": {
-    "base_token": "",
+    "base_token": "Ups6bcbLvaGYxEs4O62cvn7SnMb",
     "douyin": {
-      "accounts": "",
-      "notes": ""
+      "accounts": "tblZBId4yKfNePP4",
+      "notes": "tblZgsuXDSMYD8rJ"
     },
     "xiaohongshu": {
-      "accounts": "",
-      "notes": ""
+      "accounts": "tblerWB9RktJcyu1",
+      "notes": "tblaBRfzlMGWgsqO"
     },
     "kuaishou": {
-      "accounts": "",
-      "notes": ""
+      "accounts": "tblEGgTdCF8tvMxb",
+      "notes": "tblSRbG3tnDH08IM"
     },
     "shipinhao": {
-      "accounts": "",
-      "notes": ""
+      "accounts": "tblJXZ126E8tOJTc",
+      "notes": "tbl2e8gAI8TGglh7"
     }
   },
   "user_ids": {
-    "operations": [],
-    "developers": []
+    "operations": [
+      {
+        "罗粤": "ou_97e5433061e06ea154d3f65be1dc5150"
+      },
+      {
+        "曾婉婷": "ou_a071f8484ac8326728a8261e8a59402c"
+      }
+    ],
+    "developers": [
+      {
+        "刘建强": "ou_cf1e39d175637648419f781542ea1ffa"
+      }
+    ]
   },
-  "sentry_dsn": ""
+  "sentry_dsn": "https://53d28152517588d2c7f2b0b7165bfcd4@sentry.zh-cn.xmfunny.com/28"
+
 }
