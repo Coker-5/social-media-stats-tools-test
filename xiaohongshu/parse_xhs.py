@@ -1,12 +1,7 @@
 import pandas as pd
-
-from tools.config_loader import BOT_WEBHOOK
-from tools.data_clean import cleaning
 from tools.logstar import get_logger
-from tools.send_feishu import FeishuBot
 
 log = get_logger()
-bot = FeishuBot(BOT_WEBHOOK)
 
 
 def parse_xhs_notes(file_path):

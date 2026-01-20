@@ -1,6 +1,5 @@
 # feishu_webhook.py
 import time
-from typing import List, Dict, Any, Optional
 import requests
 import json
 import lark_oapi as lark

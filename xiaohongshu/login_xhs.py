@@ -1,191 +1,87 @@
-import io
 import time
-from DrissionPage import Chromium
-from PIL import Image
-
-from tools.logstar import get_logger
-from tools.send_feishu import FeishuBot
-from tools.config_loader import (BOT_WEBHOOK, OPERATIONS_ID_LIST, APP_ID, APP_SECRET)
-
-log = get_logger()
-# 传入 APP_ID 和 APP_SECRET 才能支持飞书图片上传功能
-bot = FeishuBot(BOT_WEBHOOK, APP_ID, APP_SECRET)
+from framework.base_login import BaseLogin, log
 
 
-def get_login_qrcode(tab, platform, target_size=(180, 180)):
-    """
-    获取并处理二维码：处理小红书点击切换、去灰、二值化处理
-    """
-    try:
-        if tab.ele(".css-wemwzq", timeout=3):
-            tab.ele(".css-wemwzq").click()
-            tab.wait(1)
+class XiaoHongShuLogin(BaseLogin):
+    def __init__(self, tab, project_name, config):
+        # 【优化1】继承基类，统一初始化逻辑，减少冗余代码
+        super().__init__(tab, project_name, config)
+        self.platform = "小红书"
 
-        tab.wait.ele_displayed(".login-box-container", timeout=5)
-        login_content = tab.ele(".login-box-container")
-        qrcode_img = login_content.eles("tag:img")[1]
+    def get_login_qrcode(self):
+        """
+        获取并处理二维码：处理小红书点击切换、去灰、二值化处理
+        """
+        self.tab.ele(".css-wemwzq").click()
+        self.tab.wait(2)
+        self.tab.wait.ele_displayed(".login-box-container", timeout=5)
+        login_content = self.tab.ele(".login-box-container")
+        qrcode_img = login_content.eles("tag:img")[1]  # 获取第二个img标签
 
-        if qrcode_img:
-            qrcode_bytes = qrcode_img.src(timeout=5, base64_to_bytes=True)
-            if not qrcode_bytes: return None
-
-            try:
-                with Image.open(io.BytesIO(qrcode_bytes)) as img:
-                    # 第一步：转为 RGBA 处理透明背景
-                    img = img.convert("RGBA")
-
-                    # 第二步：白底填充，去除灰色背景
-                    canvas = Image.new("RGBA", img.size, (255, 255, 255, 255))
-                    canvas.paste(img, (0, 0), img)
-
-                    # 第三步：二值化处理（亮度低于200设为纯黑，否则纯白）
-                    gray = canvas.convert("L")
-                    bw_img = gray.point(lambda x: 0 if x < 200 else 255, '1')
-
-                    # 第四步：调整尺寸并转回 RGB
-                    final_img = bw_img.convert("RGB")
-                    final_img = final_img.resize(target_size, Image.Resampling.LANCZOS)
-
-                    # 返回字节流
-                    buf = io.BytesIO()
-                    final_img.save(buf, format='PNG')
-                    return buf.getvalue()
-
-            except Exception as e:
-                log.warning(f"图片像素处理失败: {e}")
-                return qrcode_bytes
-    except Exception as e:
-        log.error(f"获取二维码失败: {e}")
-        return None
+        qrcode_bytes = qrcode_img.src(timeout=5, base64_to_bytes=True)
+        return self.process_qrcode_image(qrcode_bytes)
 
 
-def is_xiaohongshu_login(page_xiaohongshu):
-    """
-    检查小红书是否已登录
-    """
-    target_url = "https://creator.xiaohongshu.com/new/home"
-    try:
-        # 检查登录容器是否存在
-        login_container = page_xiaohongshu.ele(".login-box-container", timeout=2)
-        # 检查 URL 是否包含创作者中心核心路径
-        url_matched = target_url in page_xiaohongshu.url
+    def check_status(self):
+        target_url = "https://creator.xiaohongshu.com/new/home"
+        login_container = self.tab.ele(".login-box-container", timeout=2)
+        is_home_url = target_url in self.tab.url
+        # 没有登录框且处于首页URL则视为登录成功
+        return not login_container and is_home_url
 
-        # 如果没有登录框且 URL 匹配，则视为已登录
-        if not login_container and url_matched:
+
+    def run_login(self, alert_interval=300, timeout_limit=1200):
+
+        start_time = time.time()
+        self.tab.get('https://creator.xiaohongshu.com/new/home')
+        self.tab.wait(8)
+
+        if self.check_status():
+            log.info(f"{self.platform} 已成功登录")
             return True
-        else:
-            return False
-    except Exception as e:
-        log.warning(f"检查登录状态时发生错误: {e}")
-        return False
 
+        log.warning(f"{self.platform}创作者中心---登录已失效，请重新扫码登录")
+        qr_code_data = self.get_login_qrcode()
+        last_alert = self.send_login_card(self.platform, False, "登录已失效", qr_code_data)
 
-def send_login_card(platform: str, statu: bool, reason: str = "", screenshot_bytes: bytes = None):
-    """
-    发送登录通知卡片（与视频号标准对齐）
-    """
-    if statu:
-        bot.send_card_success(
-            title="登录成功",
-            task_name=f"爬虫-{platform}-新媒体数据采集",
-            platform=platform,
-            success_message=f"【{platform}】登录成功 "
-        )
-    else:
-        if screenshot_bytes:
-            bot.send_card_alert(
-                title="登录",
-                title_color="yellow",
-                task_name=f"监控告警-{platform}登录状态",
-                run_script_name=__name__,
-                exception_plan=f"爬虫-{platform}-新媒体数据采集",
-                exception_app=platform,
-                error_message=f"【{platform}】{reason}，请尽快重新扫码登录。",
-                screenshot_bytes=screenshot_bytes,
-                screenshot_text=f"{platform}最新登录二维码：",
-                at_user_ids=OPERATIONS_ID_LIST
-            )
-        else:
-            bot.send_card_alert(
-                title="登录告警",
-                title_color="yellow",
-                task_name=f"监控告警-{platform}登录状态",
-                exception_plan=f"爬虫-{platform}-新媒体数据采集",
-                exception_app=platform,
-                error_message=f"【{platform}】{reason}",
-                at_user_ids=OPERATIONS_ID_LIST
-            )
-        log.info(f"发送提醒: {platform} {reason}")
-
-    return time.time()
-
-
-def login_xiaohongshu(page_xiaohongshu, alert_interval=300, timeout_limit=1200):
-    """
-    登录小红书创作者中心
-    :param page_xiaohongshu: 浏览器标签页对象
-    :param alert_interval: 告警频率间隔（秒），默认5分钟
-    :param timeout_limit: 最大等待扫码时间（秒），默认20分钟
-    """
-    try:
-        tab = page_xiaohongshu
-        platform = "小红书"
-
-        tab.get("https://creator.xiaohongshu.com/new/home")
-        tab.wait(3)
-
-        start_wait_time = time.time()
-        last_alert_time = 0
-
-        # 1. 检查初始登录状态
-        if is_xiaohongshu_login(tab):
-            log.info(f"{platform}创作者中心---已成功登录")
-            return True
-        else:
-            log.warning(f"{platform}创作者中心---登录已失效，请重新扫码登录")
-            # 初始失效提醒
-            qr_code_data = get_login_qrcode(tab, platform)
-            last_alert_time = send_login_card(platform, statu=False, reason="登录已失效",
-                                              screenshot_bytes=qr_code_data)
-
-        # 2. 等待登录循环
         while True:
-            current_time = time.time()
+            elapsed_seconds = int(time.time() - start_time)
 
-            # 检查扫码成功状态
-            if is_xiaohongshu_login(tab):
-                log.info(f"{platform}创作者中心---已成功登录")
-                send_login_card(platform=platform, statu=True)
+            if self.check_status():
+                log.info(f"{self.platform} 已成功登录")
+                self.send_login_card(self.platform, True)
                 return True
 
-            # 超时退出
-            if current_time - start_wait_time > timeout_limit:
-                error_msg = f"{platform}登录已超时，请联系管理员"
-                log.error(error_msg)
-                send_login_card(platform, statu=False, reason=error_msg)
+            if elapsed_seconds > timeout_limit:
+                error_msg = f"{self.platform}登录已超时，请联系管理员"
+                log.error(f"[{self.project_name}] {error_msg}")
+                self.send_login_card(self.platform, False, error_msg)
                 return False
 
-            # 定时刷新并重新推送二维码（防止过期）
-            if current_time - last_alert_time >= alert_interval:
-                try:
-                    tab.refresh()
-                    tab.wait(3)
-                    qr_code_data = get_login_qrcode(tab, platform)
-                    last_alert_time = send_login_card(platform, statu=False, reason="登录已失效",
-                                                      screenshot_bytes=qr_code_data)
-                except Exception as e:
-                    log.error(f"截图失败: {e}")
+            # 每隔一段时间刷新重发
+            if time.time() - last_alert > alert_interval:
+                self.tab.refresh()
+                self.tab.wait(3)
+                qr_code_data = self.get_login_qrcode()
+                last_alert = self.send_login_card(self.platform, False, "登录已失效", qr_code_data)
 
-            elapsed_time = int(current_time - start_wait_time)
-            log.info(f"{platform}正在等待扫码，已耗时 {elapsed_time}s...")
-            time.sleep(60)
 
-    except Exception as e:
-        log.error(f"登录小红书时发生错误: {e}", exc_info=True)
-        return False
+            log.info(f"【{self.project_name}】正在等待{self.platform}扫码，已耗时 {elapsed_seconds}s...")
+            time.sleep(30)
+
+
+# 对外暴露统一格式的函数接口
+def login_xiaohongshu(tab, project_name, config, alert_interval=480, timeout_limit=7200):
+    handler = XiaoHongShuLogin(tab, project_name, config)
+    return handler.run_login(alert_interval, timeout_limit)
 
 
 if __name__ == '__main__':
-    browser = Chromium()
-    tab = browser.latest_tab
-    login_xiaohongshu(tab, alert_interval=300, timeout_limit=1200)
+    from DrissionPage import Chromium
+    from tools.config_loader import get_project_config
+
+    tab = Chromium().latest_tab
+    p_name = "TEST"
+    p_config = get_project_config(p_name)
+
+    login_xiaohongshu(tab, p_name, p_config, alert_interval=60, timeout_limit=240)

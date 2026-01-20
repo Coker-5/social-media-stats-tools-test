@@ -92,7 +92,7 @@ def main():
 
 if __name__ == '__main__':
     main.serve(
-        name="daily-spider-job",
+        name="daily-framework-job",
         schedule=CronSchedule(cron="42 11 * * *", timezone="Asia/Shanghai"),
         tags=["media", "drission-page"],
         description="新媒体数据采集系统"

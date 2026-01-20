@@ -1,10 +1,7 @@
 # parse_dy.py
-from tools.config_loader import BOT_WEBHOOK
 from tools.logstar import get_logger
-from tools.send_feishu import FeishuBot
 
 log = get_logger()
-bot = FeishuBot(BOT_WEBHOOK)
 
 
 def parse_douyin_notes(notes_res):
@@ -67,7 +64,6 @@ def parse_douyin_notes(notes_res):
 
     except Exception as e:
         log.error(e)
-
         raise
 
     return notes_datas
